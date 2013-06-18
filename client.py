@@ -14,12 +14,12 @@ tagHeader = struct.Struct('!4sHLH')			# 4 char, 2 short uint, 4 long uint, 2 sho
 messageType = {
 	# TODO: need specification on how to treat those which return None
 	'SEQN':     tagHeader,						# packet log separator
-    'GPS\x01':  struct.Struct("<BBH 3d 5f HH"), # GPS BIN1
+	'GPS\x01':  struct.Struct("<BBH 3d 5f HH"), # GPS BIN1
 		# more details about GPS format here:
 		# http://www.hemispheregps.com/gpsreference/Bin1.htm
-    'ADIS':     struct.Struct(">12H"),			# ADIS16405 IMU
-    'MPU9':     struct.Struct(">7H"),			# MPU9150 IMU
-    'MPL3':     struct.Struct(">2L"),			# MPL3115A2 Pressure Sensor
+	'ADIS':     struct.Struct(">12H"),			# ADIS16405 IMU
+	'MPU9':     struct.Struct(">7H"),			# MPU9150 IMU
+	'MPL3':     struct.Struct(">2L"),			# MPL3115A2 Pressure Sensor
 	'ACC1':		None,							# Theo IMU, main accelerometer, 6 bytes (X, Y, Z)
 	'ACC2':		None,							# Theo IMU, main accelerometer, 6 bytes (X, Y, Z)
 	'GYRO':		None,							# Theo IMU, gyroscope (+ temp), 7 bytes (X, Y, Z, Temperature)
