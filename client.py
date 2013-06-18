@@ -1,4 +1,3 @@
-
 import datetime
 import socket
 import sys
@@ -66,7 +65,7 @@ def main():
 				
 			processData(fieldID, timestamp, length, data)
 				
-			message = message [12+length:] # select the next message
+			message = message [12+length:] # select the next message 
 
 		#exit() # TEMP: for debugging
 		# TODO: define loop termination conditions (from front-end?)
