@@ -20,11 +20,11 @@ messageType = {
 	'ADIS':     struct.Struct(">12H"),			# ADIS16405 IMU
 	'MPU9':     struct.Struct(">7H"),			# MPU9150 IMU
 	'MPL3':     struct.Struct(">2L"),			# MPL3115A2 Pressure Sensor
-	'ACC1':		None,							# Theo IMU, main accelerometer, 6 bytes (X, Y, Z)
-	'ACC2':		None,							# Theo IMU, main accelerometer, 6 bytes (X, Y, Z)
-	'GYRO':		None,							# Theo IMU, gyroscope (+ temp), 7 bytes (X, Y, Z, Temperature)
-	'MAGN':		None,							# Theo IMU, magnetometer, 6 bytes (X, Y, Z)
-	'ERRO':		None							# Error message, length of string error message.
+	'ACC1':		None,                                   # Theo IMU, main accelerometer, 6 bytes (X, Y, Z)
+	'ACC2':		None,                                   # Theo IMU, main accelerometer, 6 bytes (X, Y, Z)
+	'GYRO':		None,                                   # Theo IMU, gyroscope (+ temp), 7 bytes (X, Y, Z, Temperature)
+	'MAGN':		None,                                   # Theo IMU, magnetometer, 6 bytes (X, Y, Z)
+	'ERRO':		None                                    # Error message, length of string error message.
 }
 
 def main():
