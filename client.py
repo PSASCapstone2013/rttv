@@ -114,7 +114,7 @@ def processData(fieldID, timestamp, length, data):
 		return None
 		
 def jsonGPSbin1(fieldID, timestamp, parsedData):
-	obj = json.dumps({
+	obj = json.dumps({'gps':{
 		'fieldID': fieldID,
 		'timestamp': timestamp,
 		'AgeOfDiff': parsedData[0],
@@ -130,11 +130,11 @@ def jsonGPSbin1(fieldID, timestamp, parsedData):
 		'StdDevResid': parsedData[10],
 		'NavMode': parsedData[11],
 		'ExtendedAgeOfDiff': parsedData[12]
-	})
+	}})
 	return obj
 	
 def jsonADIS(fieldID, timestamp, parsedData):
-	obj = json.dumps({
+	obj = json.dumps({'ADIS':{
 		'fieldID': fieldID,
 		'timestamp': timestamp,
 		'PowerSupply': parsedData[0],
@@ -152,7 +152,7 @@ def jsonADIS(fieldID, timestamp, parsedData):
 		'MagnetometerMagn': magnitude(parsedData[7], parsedData[8], parsedData[9]),
 		'Temperature': parsedData[10],
 		'AuxiliaryADC': parsedData[11]
-	})
+	}})
 	return obj
 
 def jsonMPU9(fieldID, timestamp, parsedData):
@@ -195,7 +195,8 @@ def magnitude(x, y, z):
 def sendJsonObj(jsonObj):
 	if jsonObj == None:
 		return
-
+	
+	
 	# TODO: send JSON object to the front-end application from this function
 
 	# To decode the JSON objects in Python, use:
