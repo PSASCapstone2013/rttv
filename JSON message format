@@ -1,0 +1,44 @@
+GPS:
+Obj = {'gps':{
+		'fieldID': 4 bytes,
+		'timestamp': 6 bytes,
+		'AgeOfDiff': 1byte,
+		'NumOfSats': 1byte,
+		'GPSWeek': 2byte,
+		'GPSTimeOfWeek': double,
+		'Latitude': double,
+		'Longitude': double,
+		'Height': float,
+		'VNorth': float,
+		'VEast': float,
+		'Vup': float,
+		'StdDevResid': float,
+		'NavMode': 2 bytes,
+		'ExtendedAgeOfDiff': 2 bytes
+	     }
+	}
+
+ADIS:
+
+Obj = {'ADIS':{
+		'fieldID': 4 bytes,
+		'timestamp': 6 bytes,
+		'PowerSupply': 2 bytes,
+		'GyroscopeX': 2bytes,
+		'GyroscopeY': 2bytes,
+		'GyroscopeZ': 2 bytes,
+		'GyroscopeMagn': float,
+		'AccelerometerX': 2 bytes,
+		'AccelerometerY': 2 bytes,
+		'AccelerometerZ': 2 bytes,
+		'AccelerometerMagn': float,
+		'MagnetometerX': 2 bytes,
+		'MagnetometerY': 2 bytes,
+		'MagnetometerZ': 2 bytes,
+		'MagnetometerMagn': float,
+		'Temperature': 2 bytes,
+		'AuxiliaryADC': 2 bytes
+	      }
+	}
+
+
