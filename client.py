@@ -7,24 +7,18 @@ IP_ADDRESS = ""
 PORT = 36000
 PACKET_SIZE = 4096
 
-DEBUG = (sys.argv[1:] == ['-d']) 			# use '-d' option to display program output
+DEBUG = (sys.argv[1:] == ['-d'])                # use '-d' option to display program output
 
-tagHeader = struct.Struct('!4sHLH')			# 4 char, 2 short uint, 4 long uint, 2 short uint
+delimiter = struct.Struct('!4sHLH')             # 4 char, 2 short uint, 4 long uint, 2 short uint
 
 messageType = {
-	# TODO: need specification on how to treat those which return None
-	'SEQN':     tagHeader,						# packet log separator
+	'SEQN':     delimiter,                      # packet log separator
 	'GPS\x01':  struct.Struct("<BBH 3d 5f HH"), # GPS BIN1
 		# more details about GPS format here:
 		# http://www.hemispheregps.com/gpsreference/Bin1.htm
-	'ADIS':     struct.Struct(">12H"),			# ADIS16405 IMU
-	'MPU9':     struct.Struct(">7H"),			# MPU9150 IMU
-	'MPL3':     struct.Struct(">2L"),			# MPL3115A2 Pressure Sensor
-	'ACC1':		None,                                   # Theo IMU, main accelerometer, 6 bytes (X, Y, Z)
-	'ACC2':		None,                                   # Theo IMU, main accelerometer, 6 bytes (X, Y, Z)
-	'GYRO':		None,                                   # Theo IMU, gyroscope (+ temp), 7 bytes (X, Y, Z, Temperature)
-	'MAGN':		None,                                   # Theo IMU, magnetometer, 6 bytes (X, Y, Z)
-	'ERRO':		None                                    # Error message, length of string error message.
+	'ADIS':     struct.Struct(">12H"),          # ADIS16405 IMU
+	'MPU9':     struct.Struct(">7H"),           # MPU9150 IMU
+	'MPL3':     struct.Struct(">2L"),           # MPL3115A2 Pressure Sensor
 }
 
 def main():
@@ -40,16 +34,17 @@ def main():
 		# receive packet
 		message = sock.recv(PACKET_SIZE)
 
-		# dump packet to log file
-		logFile.write(tagHeader.pack('SEQN', 0, 0, len(message))) # add packet separator
-		logFile.write(message)
-		
 		# get and check packet sequence number
 		seq = int(message[0:4].encode('hex'), 16)             # sequence number (4 bytes)
 		checkForLostPackets(seq, lastSeq)
 		lastSeq = seq
 		if DEBUG:
 			print seq
+		
+		# dump packet to log file
+		logFile.write(delimiter.pack('SEQN', seq, 0, len(message))) # add packet separator
+		logFile.write(message)
+		# TODO: need to figure out delimiter format
 		
 		# packet may contain multiple messages
 		message = message[4:]
@@ -62,8 +57,11 @@ def main():
 
 			if DEBUG:
 				print "  %s %2d %.3f" % (fieldID, length, float(timestamp)/1e9), 
-				
-			processData(fieldID, timestamp, length, data)
+			
+			if fieldID == 'ERRO':
+				sendErrorToFrontEnd(fieldID, timestamp, length, data)
+			else:
+				processData(fieldID, timestamp, length, data)
 				
 			message = message [12+length:] # select the next message 
 
@@ -76,6 +74,10 @@ def checkForLostPackets(seq, lastSeq):
 		print packetsLost, "packets were lost between", lastSeq, "and", seq
 	# TODO: pass a message to front-end to notify about lost packets; need specifications
 
+def sendErrorToFrontEnd(fieldID, timestamp, length, data):
+	# TODO: encapsulate error message into JSON object and sent to front-end
+	pass
+	
 def processData(fieldID, length, timestamp, data):
 	# parse data
 	format = messageType.get(fieldID)
@@ -101,10 +103,6 @@ def computeAccelerationMagnitude(fieldID, parsedData):
 		x = parsedData[4]
 		y = parsedData[5]
 		z = parsedData[6]
-	elif fieldID == 'ACC1':
-		return None # TODO: need specifications here
-	elif fieldID == 'ACC2':
-		return None # TODO: need specifications here
 	else:
 		return None
 		
