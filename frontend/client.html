@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=620">
+<meta charset="utf-8">
+<style type="text/css">
+body {
+		max-width: 900px;
+    padding: 15px 15px;
+    margin: 0px auto;
+    background: #e5e5e5;
+}
+/* Layout */
+.grid {
+    display: block;
+    padding: 0;
+    /* remove intra-unit whitespace for all font families */
+    letter-spacing: -0.31em;
+    word-spacing: -0.43em;
+    /* protect against WebKit bug with optimizelegibility */
+    text-rendering: optimizespeed;
+}
+.unit-1-3 {
+    width: 400px;
+    display: inline-block;
+    margin: 0 10px 20px;
+    /* controls vertical positioning of units */
+    vertical-align: top;
+    /* reset defaults */
+    letter-spacing: normal;
+    word-spacing: normal;
+    text-rendering: auto;
+}
+.box {
+    display: block;
+    overflow: hidden;
+    min-height: 100px;
+    padding: 16px;
+    text-decoration: none;
+    background: #fff;
+}
+.x2 .box {
+    min-height: 200px;
+}
+.x3 {
+    float:left;
+}
+.x3 .box {
+    min-height: 352px;
+}
+
+ok{
+	color:green;
+}
+ohno{
+	color:red;
+}
+
+svg {
+  font: 10px sans-serif;
+}
+.line {
+  fill: none;
+  stroke: #000;
+  stroke-width: 1.5px;
+}
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+</style>
+<title>PSAS - Real Time Telemetry Visualization</title>
+<script src="scripts\jquery.min.js"></script>
+<script src="scripts\d3.v2.js"></script>
+</head>
+<body>
+<div class="grid">
+	<div class="unit-1-3">
+		<div class="box"><h1 id="locked"></h1></div>
+	</div>
+	<div class="unit-1-3 x3">
+		<div class="box"><h1 id="gps"></h1></div>
+	</div>
+	<div class="unit-1-3 x2">
+		<div class="box"><h1 id="acceleration"></h1></div>
+	</div>
+</div>
+</body>
+</html>
+
+<script>
+//magnitude graph
+var n = 60,
+    random = d3.random.normal(0, 0),
+    data = d3.range(n).map(random);
+
+var margin = {top: 10, right: 10, bottom: 20, left: 60},
+    width = 760 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+
+var x = d3.scale.linear()
+    .domain([0, n - 1])
+    .range([0, width]);
+
+var y = d3.scale.linear()
+    .domain([0, 100000])
+    .range([height, 0]);
+
+var line = d3.svg.line()
+    .x(function(d, i) { return x(i); })
+    .y(function(d, i) { return y(d); });
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+svg.append("defs").append("clipPath")
+    .attr("id", "clip")
+  .append("rect")
+    .attr("width", width)
+    .attr("height", height);
+    
+svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.svg.axis().scale(x).orient("bottom"));
+
+svg.append("g")
+    .attr("class", "y axis")
+    .call(d3.svg.axis().scale(y).orient("left"));
+    
+svg.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y",0 - margin.left)
+    .attr("x",0 - (height / 2))
+    .attr("dy", "1em")
+    .style("text-anchor", "middle")
+    .text("Magnitude");
+
+var path = svg.append("g")
+    .attr("clip-path", "url(#clip)")
+  .append("path")
+    .data([data])
+    .attr("class", "line")
+    .attr("d", line);
+
+function tick() {
+  // push a new data point onto the back
+  // redraw the line, and slide it to the left
+  path
+      .attr("d", line)
+      .attr("transform", null)
+    	.transition()
+      .duration(200)
+      .ease("linear")
+      .attr("transform", "translate(" + x(-1) + ")")
+      .each("end", tick);
+
+  // pop the old data point off the front
+  data.shift();
+}
+</script>
+
+<script>
+//websocket script
+$(function () {	
+	// if user is running mozilla then use it's built-in WebSocket
+	window.WebSocket = window.WebSocket || window.MozWebSocket;
+	var connection = new WebSocket('ws://localhost:8080');
+	
+	log = document.getElementById('locked');
+	gps = document.getElementById('gps');
+	acc = document.getElementById('acceleration');
+	
+	connection.onopen = function () {
+		connection.send('Client Connected');
+		log.innerHTML = 'connection is open' + log.innerHTML;
+	};
+	connection.onerror = function (error) {
+		log.innerHTML = 'Rocket is <ohno>not locked</ohno>.';
+	};
+	connection.onclose = function () {
+		log.innerHTML = 'Rocket is <ohno>not locked</ohno>.';
+	};
+	
+	connection.onmessage = function (message) {
+		// try to decode json (this script assumes that each message from the server is json)
+		try {
+			var json = JSON.parse(message.data);
+			log.innerHTML = 'Rocket is <ok>locked</ok>.';
+			
+			if (json.fieldID == 'GPS\x01'){
+				//GPS Data
+				var gpsdata = 'Lat: &nbsp; &nbsp;' + json.Latitude.toFixed(3) + '<br>Long: ' + json.Longitude.toFixed(3) + '<br><br>Height: ' + json.Height.toFixed(3) + 
+					'<br><br>NavMode: ' + json.NavMode + '<br>Satellites: ' + json.NumOfSats;
+				gps.innerHTML = gpsdata;
+			}
+			else if (json.fieldID == 'ADIS'){
+				//ADIS Data
+				var acceleration = 'Acceleration: X ' + json.AccelerometerX.toFixed(2) + 
+					'<br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Y ' + json.AccelerometerY.toFixed(2) + 
+					'<br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Z ' + json.AccelerometerZ.toFixed(2) + 
+					'<br>Magnitude: ' + json.AccelerometerMagn.toFixed(2);
+				acc.innerHTML = acceleration;
+				//send data to graph				
+				data.push(json.AccelerometerMagn.toFixed(2));
+				tick();
+			}
+		} catch (e) {
+			console.log('This doesn\'t look like a valid JSON: ', message.data);
+			return;
+		}
+	};
+	
+});
+</script>
