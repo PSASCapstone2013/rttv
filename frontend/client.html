@@ -64,11 +64,16 @@ svg {
   stroke: #000;
   stroke-width: 1.5px;
 }
+.area {
+  fill: steelblue;
+  stroke-width: 0;
+}
 .axis path, .axis line {
   fill: none;
   stroke: #000;
   shape-rendering: crispEdges;
 }
+
 </style>
 <title>PSAS - Real Time Telemetry Visualization</title>
 <script src="scripts\jquery.min.js"></script>
@@ -90,78 +95,119 @@ svg {
 </html>
 
 <script>
+
+var color = d3.scale.category10();
+
+function Path(svg, data, generatorName, generatorFunction) {
+
+    var ticker = svg.append("g")
+        .attr("clip-path", "url(#clip)")
+        .append("path")
+        .data([data])
+        .attr("class", generatorName);
+
+    this.tick = function(duration, translateDistance) {
+        // redraw the path, and slide it to the left
+        ticker
+            .attr("d", generatorFunction)
+            .attr("transform", null)
+            .transition()
+            .duration(duration)
+            .ease("linear")
+            .attr("transform", "translate(" + translateDistance + ")");
+    };
+}
+
+// Define a class like this
+function Graph(margin, width, height, dataSize) {
+
+    var self = this;
+    self.width = width;
+    self.height = height;
+    self.margin = margin;
+
+    var emptyAry = function(size) {
+        return d3.range(size).map(function() { return 0; });
+    };
+
+    self.data = emptyAry(dataSize);
+
+    var mapX = d3.scale.linear()
+        .domain([0, self.data.length - 1])
+        .range([0, self.width]);
+
+    var mapY = d3.scale.linear()
+        .domain([0, 100])
+        .range([self.height, 0]);
+
+    var line = d3.svg.line()
+        .x(function(d, i) { return mapX(i); })
+        .y(function(d, i) { return mapY(d); });
+
+    var area = d3.svg.area()
+        .x(function(d, i) { return mapX(i); })
+        .y0(self.height)
+        .y1(function(d, i) { return mapY(d); });
+
+
+    self.svg = d3.select("body").append("svg")
+        .attr("width", self.width + self.margin.left + self.margin.right)
+        .attr("height", self.height + self.margin.top + self.margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + self.margin.left + "," + self.margin.top + ")");
+
+    self.svg.append("defs").append("clipPath")
+        .attr("id", "clip")
+        .append("rect")
+        .attr("width", self.width)
+        .attr("height", self.height);
+
+    self.svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + self.height + ")")
+        .call(d3.svg.axis().scale(mapX).orient("bottom"));
+
+    self.svg.append("g")
+        .attr("class", "y axis")
+        .call(d3.svg.axis().scale(mapY).orient("left"));
+
+    self.svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -self.margin.left)
+        .attr("x", -self.height / 2)
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Magnitude");
+
+    self.paths = [new Path(self.svg, self.data, "line", line), new Path(self.svg, self.data, "area", area)];
+
+    // redraw each path (line & area), and slide it to the left
+    this.tick = function() {
+        self.paths.forEach(function(path) {
+            path.tick(150, mapX(-1));
+        });
+
+        // pop the old data point off the front
+        self.data.shift();
+    };
+
+    // push a new data point onto the back
+    this.pushDatum = function(datum) {
+        self.data.push(datum);
+    };
+}
+
 //magnitude graph
-var n = 60,
-    random = d3.random.normal(0, 0),
-    data = d3.range(n).map(random);
 
-var margin = {top: 10, right: 10, bottom: 20, left: 60},
-    width = 760 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
-
-var x = d3.scale.linear()
-    .domain([0, n - 1])
-    .range([0, width]);
-
-var y = d3.scale.linear()
-    .domain([0, 100000])
-    .range([height, 0]);
-
-var line = d3.svg.line()
-    .x(function(d, i) { return x(i); })
-    .y(function(d, i) { return y(d); });
-
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-svg.append("defs").append("clipPath")
-    .attr("id", "clip")
-  .append("rect")
-    .attr("width", width)
-    .attr("height", height);
-    
-svg.append("g")
-    .attr("class", "x axis")
-    .attr("transform", "translate(0," + height + ")")
-    .call(d3.svg.axis().scale(x).orient("bottom"));
-
-svg.append("g")
-    .attr("class", "y axis")
-    .call(d3.svg.axis().scale(y).orient("left"));
-    
-svg.append("text")
-    .attr("transform", "rotate(-90)")
-    .attr("y",0 - margin.left)
-    .attr("x",0 - (height / 2))
-    .attr("dy", "1em")
-    .style("text-anchor", "middle")
-    .text("Magnitude");
-
-var path = svg.append("g")
-    .attr("clip-path", "url(#clip)")
-  .append("path")
-    .data([data])
-    .attr("class", "line")
-    .attr("d", line);
+var accelGraph = new Graph({top: 10, right: 10, bottom: 20, left: 60}, 700, 370, 60),
+    widgets = [accelGraph];
 
 function tick() {
-  // push a new data point onto the back
-  // redraw the line, and slide it to the left
-  path
-      .attr("d", line)
-      .attr("transform", null)
-    	.transition()
-      .duration(200)
-      .ease("linear")
-      .attr("transform", "translate(" + x(-1) + ")")
-      .each("end", tick);
-
-  // pop the old data point off the front
-  data.shift();
+  widgets.forEach(function(widget) {
+    widget.tick();
+  });
 }
+
 </script>
 
 <script>
@@ -192,23 +238,24 @@ $(function () {
 			var json = JSON.parse(message.data);
 			log.innerHTML = 'Rocket is <ok>locked</ok>.';
 			
-			if (json.fieldID == 'GPS\x01'){
+//			if (json.fieldID == 'GPS\x01'){
 				//GPS Data
 				var gpsdata = 'Lat: &nbsp; &nbsp;' + json.Latitude.toFixed(3) + '<br>Long: ' + json.Longitude.toFixed(3) + '<br><br>Height: ' + json.Height.toFixed(3) + 
 					'<br><br>NavMode: ' + json.NavMode + '<br>Satellites: ' + json.NumOfSats;
 				gps.innerHTML = gpsdata;
-			}
-			else if (json.fieldID == 'ADIS'){
+//			}
+//			else if (json.fieldID == 'ADIS'){
 				//ADIS Data
 				var acceleration = 'Acceleration: X ' + json.AccelerometerX.toFixed(2) + 
 					'<br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Y ' + json.AccelerometerY.toFixed(2) + 
 					'<br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Z ' + json.AccelerometerZ.toFixed(2) + 
-					'<br>Magnitude: ' + json.AccelerometerMagn.toFixed(2);
+					'<br>Magnitude: ' + json.AccelerometerMag.toFixed(2);
 				acc.innerHTML = acceleration;
-				//send data to graph				
-				data.push(json.AccelerometerMagn.toFixed(2));
+				//send data to graph
+
+				accelGraph.pushDatum(json.AccelerometerMag.toFixed(2));
 				tick();
-			}
+//			}
 		} catch (e) {
 			console.log('This doesn\'t look like a valid JSON: ', message.data);
 			return;
