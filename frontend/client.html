@@ -107,31 +107,27 @@ function Path(svg, data, generatorName, generatorFunction) {
         .data([data])
         .attr("class", generatorName);
 
-    this.tick = function(duration, translateDistance) {
-        // redraw the path, and slide it to the left
-        ticker
-            .attr("d", generatorFunction)
-            .attr("transform", null)
-            .transition()
-            .duration(duration)
-            .ease("linear")
-            .attr("transform", "translate(" + translateDistance + ")");
+    // redraw the path
+    this.tick = function() {
+        ticker.attr("d", generatorFunction);
     };
 }
 
-var emptyAry = function(size) {
+var zeros = function(size) {
     return d3.range(size).map(function() { return 0; });
 };
 
 // Define a class like this
-function Graph(width, height, dataSize, xDomain, yDomain) {
+function Graph(width, height, maxDataSize, xDomain, yDomain) {
 
-    var data = emptyAry(dataSize),
+    var dataCount = 0, // keep track of the number of data points we receive
+                       // when we reach maxDataSize, we stop scaling x-axis and start scrolling
+        data = zeros(maxDataSize),
 
         labelMargin = {top: 10, right: 10, bottom: 20, left: 60};
-
-        xDomain = xDomain || [0, data.length - 1],
-        yDomain = yDomain || [0, 0], // default to 0 domain, auto-scale as new data comes in
+        // default to 0 x/y domain, auto-scale as new data comes in
+        xDomain = xDomain || [0, 0],
+        yDomain = yDomain || [0, 0],
 
         mapX = d3.scale.linear().domain(xDomain).range([0, width]),
         mapY = d3.scale.linear().domain(yDomain).range([height, 0]),
@@ -140,11 +136,11 @@ function Graph(width, height, dataSize, xDomain, yDomain) {
         yAxis = d3.svg.axis().scale(mapY).orient("left"),
 
         line = d3.svg.line()
-        .x(function(d, i) { return mapX(i); })
+        .x(function(d, i) { return mapX(xDomain[1] - i); })
         .y(function(d) { return mapY(d); }),
 
         area = d3.svg.area()
-        .x(function(d, i) { return mapX(i); })
+        .x(function(d, i) { return mapX(xDomain[1] - i); })
         .y0(height)
         .y1(function(d) { return mapY(d); }),
 
@@ -181,29 +177,40 @@ function Graph(width, height, dataSize, xDomain, yDomain) {
         .text("Magnitude");
 
     // push a new data point onto the back
-    this.pushDatum = function(datum) {
-        if (yDomain[1] < datum) {
-            yDomain[1] = datum;
-            mapY.domain(yDomain);
-            // update y axis labels/ticks
-            svg.select(".y.axis").transition().call(yAxis);
+    this.putDatum = function(datum) {
+        data.unshift(datum);
+
+        // "scale" (widen) domain until we reach the specified max-datapoints to have on the graph,
+        // then start "translating" (keeping domain width, but tracking present data points)
+        xDomain[1] = ++dataCount;
+        if (dataCount >= maxDataSize) {
+            xDomain[0] = xDomain[1] - maxDataSize;
         }
-        data.push(datum);
+        // remap to new x-domain
+        mapX.domain(xDomain);
+        // update x-axis labels/ticks
+        svg.select(".x.axis").transition().duration(80).call(xAxis);
+
+        // y-domain should contain all data points.
+        yDomain[1] = Math.max(datum, yDomain[1]);
+        // remap to the new y-domain
+        mapY.domain(yDomain);
+        // update y axis labels/ticks
+        svg.select(".y.axis").transition().duration(100).call(yAxis);
     };
 
     // redraw each path (line & area), and slide it to the left
     this.tick = function() {
         paths.forEach(function(path) {
-            path.tick(150, mapX(-1));
+            path.tick();
         });
-
         // pop the old data point off the front
-        data.shift();
+        data.pop();
     };
 }
 
 
-var accelMagGraph = new Graph(750, 370, 60),
+var accelMagGraph = new Graph(750, 370, 80),
     widgets = [accelMagGraph];
 
 function tick() {
@@ -255,9 +262,9 @@ $(function () {
 					'<br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Z ' + json.AccelerometerZ.toFixed(2) + 
 					'<br>Magnitude: ' + json.AccelerometerMagn.toFixed(2);
 				acc.innerHTML = acceleration;
-                
+
 				//send data to graph
-				accelMagGraph.pushDatum(json.AccelerometerMagn.toFixed(2));
+				accelMagGraph.putDatum(json.AccelerometerMagn.toFixed(2));
 				tick();
 			}
 		} catch (e) {

@@ -9,7 +9,7 @@ wss.on('connection', function(ws) {
 		var tojson = {};
 		var currentdate = new Date();
 		
-		if (currentdate.getMilliseconds()%2 == 0){
+		if (currentdate.getMilliseconds()%2 == 0) {
 			tojson.fieldID = 'GPS\x01';
 			tojson.AgeOfDiff = Math.round(Math.random()*100);
 			tojson.ExtendedAgeOfDiff = Math.round(Math.random()*100000);
