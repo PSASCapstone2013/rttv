@@ -137,7 +137,7 @@ function Graph(margin, width, height, dataSize) {
         .range([0, self.width]);
 
     var mapY = d3.scale.linear()
-        .domain([0, 100])
+        .domain([0, 100000])
         .range([self.height, 0]);
 
     var line = d3.svg.line()
@@ -238,24 +238,24 @@ $(function () {
 			var json = JSON.parse(message.data);
 			log.innerHTML = 'Rocket is <ok>locked</ok>.';
 			
-//			if (json.fieldID == 'GPS\x01'){
+			if (json.fieldID == 'GPS\x01'){
 				//GPS Data
 				var gpsdata = 'Lat: &nbsp; &nbsp;' + json.Latitude.toFixed(3) + '<br>Long: ' + json.Longitude.toFixed(3) + '<br><br>Height: ' + json.Height.toFixed(3) + 
 					'<br><br>NavMode: ' + json.NavMode + '<br>Satellites: ' + json.NumOfSats;
 				gps.innerHTML = gpsdata;
-//			}
-//			else if (json.fieldID == 'ADIS'){
+			}
+			else if (json.fieldID == 'ADIS'){
 				//ADIS Data
 				var acceleration = 'Acceleration: X ' + json.AccelerometerX.toFixed(2) + 
 					'<br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Y ' + json.AccelerometerY.toFixed(2) + 
 					'<br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Z ' + json.AccelerometerZ.toFixed(2) + 
-					'<br>Magnitude: ' + json.AccelerometerMag.toFixed(2);
+					'<br>Magnitude: ' + json.AccelerometerMagn.toFixed(2);
 				acc.innerHTML = acceleration;
 				//send data to graph
 
-				accelGraph.pushDatum(json.AccelerometerMag.toFixed(2));
+				accelGraph.pushDatum(json.AccelerometerMagn.toFixed(2));
 				tick();
-//			}
+			}
 		} catch (e) {
 			console.log('This doesn\'t look like a valid JSON: ', message.data);
 			return;
