@@ -2,6 +2,8 @@ var WebSocketServer = require('ws').Server;
 var wss = new WebSocketServer({port: 8080});
 var connected = 0;
 
+var count = 0;
+
 wss.on('connection', function(ws) {
 	var id = setInterval(function() {
 		var currentdate = new Date();
@@ -18,9 +20,9 @@ wss.on('connection', function(ws) {
 		tojson.Height = Math.random()*1000;
 		tojson.NavMode = 2;
 		tojson.NumOfSats = 9;
-		tojson.AccelerometerX = Math.random()*50;
-		tojson.AccelerometerY = Math.random()*50;
-		tojson.AccelerometerZ = Math.random()*50;
+		tojson.AccelerometerX = Math.random()*500;
+		tojson.AccelerometerY = Math.random()*500;
+		tojson.AccelerometerZ = Math.random()*500;
 		tojson.AccelerometerMag = Math.sqrt(Math.pow(tojson.AccelerometerX,2)+Math.pow(tojson.AccelerometerY,2)+Math.pow(tojson.AccelerometerZ,2));
 		
 		ws.send(JSON.stringify(tojson), function() { /* ignore errors */ });

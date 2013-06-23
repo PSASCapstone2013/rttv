@@ -74,6 +74,7 @@ svg {
   shape-rendering: crispEdges;
 }
 
+
 </style>
 <title>PSAS - Real Time Telemetry Visualization</title>
 <script src="scripts\jquery.min.js"></script>
@@ -118,89 +119,92 @@ function Path(svg, data, generatorName, generatorFunction) {
     };
 }
 
+var emptyAry = function(size) {
+    return d3.range(size).map(function() { return 0; });
+};
+
 // Define a class like this
-function Graph(margin, width, height, dataSize) {
+function Graph(width, height, dataSize, xDomain, yDomain) {
 
-    var self = this;
-    self.width = width;
-    self.height = height;
-    self.margin = margin;
+    var data = emptyAry(dataSize),
 
-    var emptyAry = function(size) {
-        return d3.range(size).map(function() { return 0; });
-    };
+        labelMargin = {top: 10, right: 10, bottom: 20, left: 60};
 
-    self.data = emptyAry(dataSize);
+        xDomain = xDomain || [0, data.length - 1],
+        yDomain = yDomain || [0, 0], // default to 0 domain, auto-scale as new data comes in
 
-    var mapX = d3.scale.linear()
-        .domain([0, self.data.length - 1])
-        .range([0, self.width]);
+        mapX = d3.scale.linear().domain(xDomain).range([0, width]),
+        mapY = d3.scale.linear().domain(yDomain).range([height, 0]),
 
-    var mapY = d3.scale.linear()
-        .domain([0, 100])
-        .range([self.height, 0]);
+        xAxis = d3.svg.axis().scale(mapX).orient("bottom"),
+        yAxis = d3.svg.axis().scale(mapY).orient("left"),
 
-    var line = d3.svg.line()
+        line = d3.svg.line()
         .x(function(d, i) { return mapX(i); })
-        .y(function(d, i) { return mapY(d); });
+        .y(function(d) { return mapY(d); }),
 
-    var area = d3.svg.area()
+        area = d3.svg.area()
         .x(function(d, i) { return mapX(i); })
-        .y0(self.height)
-        .y1(function(d, i) { return mapY(d); });
+        .y0(height)
+        .y1(function(d) { return mapY(d); }),
 
+        svg = d3.select("body").append("svg")
+            .attr("width", width + labelMargin.left + labelMargin.right)
+            .attr("height", height + labelMargin.top + labelMargin.bottom)
+            .style("background-color", "white")
+            .append("g")
+            .attr("transform", "translate(" + labelMargin.left + "," + labelMargin.top + ")"),
+        paths = [new Path(svg, data, "line", line),
+                 new Path(svg, data, "area", area)];
 
-    self.svg = d3.select("body").append("svg")
-        .attr("width", self.width + self.margin.left + self.margin.right)
-        .attr("height", self.height + self.margin.top + self.margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + self.margin.left + "," + self.margin.top + ")");
-
-    self.svg.append("defs").append("clipPath")
+    svg.append("defs").append("clipPath")
         .attr("id", "clip")
         .append("rect")
-        .attr("width", self.width)
-        .attr("height", self.height);
+        .attr("width", width)
+        .attr("height", height);
 
-    self.svg.append("g")
+    svg.append("g")
         .attr("class", "x axis")
-        .attr("transform", "translate(0," + self.height + ")")
-        .call(d3.svg.axis().scale(mapX).orient("bottom"));
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
 
-    self.svg.append("g")
-        .attr("class", "y axis")
-        .call(d3.svg.axis().scale(mapY).orient("left"));
+    svg.append("g")
+    .attr("class", "y axis")
+        .call(yAxis);
 
-    self.svg.append("text")
+    svg.append("text")
         .attr("transform", "rotate(-90)")
-        .attr("y", -self.margin.left)
-        .attr("x", -self.height / 2)
+        .attr("y", -labelMargin.left)
+        .attr("x", -height / 2)
         .attr("dy", "1em")
         .style("text-anchor", "middle")
         .text("Magnitude");
 
-    self.paths = [new Path(self.svg, self.data, "line", line), new Path(self.svg, self.data, "area", area)];
+    // push a new data point onto the back
+    this.pushDatum = function(datum) {
+        if (yDomain[1] < datum) {
+            yDomain[1] = datum;
+            mapY.domain(yDomain);
+            // update y axis labels/ticks
+            svg.select(".y.axis").transition().call(yAxis);
+        }
+        data.push(datum);
+    };
 
     // redraw each path (line & area), and slide it to the left
     this.tick = function() {
-        self.paths.forEach(function(path) {
+        paths.forEach(function(path) {
             path.tick(150, mapX(-1));
         });
 
         // pop the old data point off the front
-        self.data.shift();
-    };
-
-    // push a new data point onto the back
-    this.pushDatum = function(datum) {
-        self.data.push(datum);
+        data.shift();
     };
 }
 
-//magnitude graph
 
-var accelGraph = new Graph({top: 10, right: 10, bottom: 20, left: 60}, 700, 370, 60),
-    widgets = [accelGraph];
+var accelMagGraph = new Graph(750, 370, 60),
+    widgets = [accelMagGraph];
 
 function tick() {
   widgets.forEach(function(widget) {
@@ -253,7 +257,7 @@ $(function () {
 				acc.innerHTML = acceleration;
 				//send data to graph
 
-				accelGraph.pushDatum(json.AccelerometerMag.toFixed(2));
+				accelMagGraph.pushDatum(json.AccelerometerMag.toFixed(2));
 				tick();
 //			}
 		} catch (e) {
