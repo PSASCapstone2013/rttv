@@ -79,6 +79,9 @@ svg {
 <title>PSAS - Real Time Telemetry Visualization</title>
 <script src="scripts\jquery.min.js"></script>
 <script src="scripts\d3.v2.js"></script>
+<script src="scripts\yaml.js"></script>
+<script src="widgets\graph.js"></script>
+<script src="widgets\gauge.js"></script>
 </head>
 <body>
 <div class="grid">
@@ -91,7 +94,9 @@ svg {
 	<div class="unit-1-3 x2">
 		<div class="box"><h1 id="acceleration"></h1></div>
 	</div>
+
 </div>
+
 </body>
 </html>
 
@@ -101,121 +106,48 @@ var color = d3.scale.category10();
 
 function Path(svg, data, generatorName, generatorFunction) {
 
-    var ticker = svg.append("g")
+    var path = svg.append("g")
         .attr("clip-path", "url(#clip)")
         .append("path")
         .data([data])
         .attr("class", generatorName);
 
     // redraw the path
-    this.tick = function() {
-        ticker.attr("d", generatorFunction);
+    this.draw = function(translate) {
+        path.attr("d", generatorFunction)
+         .attr("transform", null)
+         .transition()
+         .attr("transform", "translate(" + translate + ")");
     };
 }
 
-var zeros = function(size) {
+function zeros(size) {
     return d3.range(size).map(function() { return 0; });
-};
-
-// Define a class like this
-function Graph(width, height, maxDataSize, xDomain, yDomain) {
-
-    var dataCount = 0, // keep track of the number of data points we receive
-                       // when we reach maxDataSize, we stop scaling x-axis and start scrolling
-        data = zeros(maxDataSize),
-
-        labelMargin = {top: 10, right: 10, bottom: 20, left: 60};
-        // default to 0 x/y domain, auto-scale as new data comes in
-        xDomain = xDomain || [0, 0],
-        yDomain = yDomain || [0, 0],
-
-        mapX = d3.scale.linear().domain(xDomain).range([0, width]),
-        mapY = d3.scale.linear().domain(yDomain).range([height, 0]),
-
-        xAxis = d3.svg.axis().scale(mapX).orient("bottom"),
-        yAxis = d3.svg.axis().scale(mapY).orient("left"),
-
-        line = d3.svg.line()
-        .x(function(d, i) { return mapX(xDomain[1] - i); })
-        .y(function(d) { return mapY(d); }),
-
-        area = d3.svg.area()
-        .x(function(d, i) { return mapX(xDomain[1] - i); })
-        .y0(height)
-        .y1(function(d) { return mapY(d); }),
-
-        svg = d3.select("body").append("svg")
-            .attr("width", width + labelMargin.left + labelMargin.right)
-            .attr("height", height + labelMargin.top + labelMargin.bottom)
-            .style("background-color", "white")
-            .append("g")
-            .attr("transform", "translate(" + labelMargin.left + "," + labelMargin.top + ")"),
-        paths = [new Path(svg, data, "line", line),
-                 new Path(svg, data, "area", area)];
-
-    svg.append("defs").append("clipPath")
-        .attr("id", "clip")
-        .append("rect")
-        .attr("width", width)
-        .attr("height", height);
-
-    svg.append("g")
-        .attr("class", "x axis")
-        .attr("transform", "translate(0," + height + ")")
-        .call(xAxis);
-
-    svg.append("g")
-    .attr("class", "y axis")
-        .call(yAxis);
-
-    svg.append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", -labelMargin.left)
-        .attr("x", -height / 2)
-        .attr("dy", "1em")
-        .style("text-anchor", "middle")
-        .text("Magnitude");
-
-    // push a new data point onto the back
-    this.putDatum = function(datum) {
-        data.unshift(datum);
-
-        // "scale" (widen) domain until we reach the specified max-datapoints to have on the graph,
-        // then start "translating" (keeping domain width, but tracking present data points)
-        xDomain[1] = ++dataCount;
-        if (dataCount >= maxDataSize) {
-            xDomain[0] = xDomain[1] - maxDataSize;
-        }
-        // remap to new x-domain
-        mapX.domain(xDomain);
-        // update x-axis labels/ticks
-        svg.select(".x.axis").transition().duration(80).call(xAxis);
-
-        // y-domain should contain all data points.
-        yDomain[1] = Math.max(datum, yDomain[1]);
-        // remap to the new y-domain
-        mapY.domain(yDomain);
-        // update y axis labels/ticks
-        svg.select(".y.axis").transition().duration(100).call(yAxis);
-    };
-
-    // redraw each path (line & area), and slide it to the left
-    this.tick = function() {
-        paths.forEach(function(path) {
-            path.tick();
-        });
-        // pop the old data point off the front
-        data.pop();
-    };
 }
 
+function createGauge(label) {
+    var config = 
+    {
+        size: 360,
+        label: label,
+        minorTicks: 5,
+        max: 10000,
+        yellowPercent: 80,
+        redPercent: 90
+    };
+
+    return new Gauge(config);
+}
+
+var gauge = createGauge("memory");
+gauge.render();
 
 var accelMagGraph = new Graph(750, 370, 80),
-    widgets = [accelMagGraph];
+    widgets = [accelMagGraph, gauge];
 
 function tick() {
   widgets.forEach(function(widget) {
-    widget.tick();
+    widget.draw();
   });
 }
 
@@ -250,10 +182,17 @@ $(function () {
 			log.innerHTML = 'Rocket is <ok>locked</ok>.';
 			
 			if (json.fieldID == 'GPS\x01'){
+
+                var height = json.Height.toFixed(3);
+
 				//GPS Data
-				var gpsdata = 'Lat: &nbsp; &nbsp;' + json.Latitude.toFixed(3) + '<br>Long: ' + json.Longitude.toFixed(3) + '<br><br>Height: ' + json.Height.toFixed(3) + 
+				var gpsdata = 'Lat: &nbsp; &nbsp;' + json.Latitude.toFixed(3) + '<br>Long: ' + json.Longitude.toFixed(3) + '<br><br>Height: ' + height + 
 					'<br><br>NavMode: ' + json.NavMode + '<br>Satellites: ' + json.NumOfSats;
 				gps.innerHTML = gpsdata;
+
+                // send height data to gauge
+
+                gauge.put(height);
 			}
 			else if (json.fieldID == 'ADIS'){
 				//ADIS Data
@@ -264,9 +203,9 @@ $(function () {
 				acc.innerHTML = acceleration;
 
 				//send data to graph
-				accelMagGraph.putDatum(json.AccelerometerMagn.toFixed(2));
-				tick();
+				accelMagGraph.put(json.AccelerometerMagn.toFixed(2));
 			}
+            tick();
 		} catch (e) {
 			console.log('This doesn\'t look like a valid JSON: ', message.data);
 			return;
