@@ -54,7 +54,7 @@ function Graph(width, height, maxDataSize) {
         .attr("x", -height / 2)
         .attr("dy", "1em")
         .style("text-anchor", "middle")
-        .text("Magnitude");
+        .text("Roll");
 
     // add data to the list
     this.put = function(value) {
