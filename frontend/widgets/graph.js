@@ -1,8 +1,7 @@
 function Graph(width, height, maxDataSize) {
-
     var dataCount = 0, // keep track of the number of data points we receive
                        // when we reach maxDataSize, we stop scaling x-axis and start scrolling
-        data = zeros(maxDataSize),
+        data = zeros(0),
 
         labelMargin = {top: 10, right: 10, bottom: 20, left: 60};
         // default to 0 x/y domain, auto-scale as new data comes in
@@ -59,7 +58,7 @@ function Graph(width, height, maxDataSize) {
     // add data to the list
     this.put = function(value) {
         // pop the old data point off the front
-        data.pop();
+        // data.pop();
 
         data.unshift(value);
 
