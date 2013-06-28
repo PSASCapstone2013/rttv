@@ -155,7 +155,7 @@ def processData(fieldID, timestamp, length, data):
         elif fieldID == 'GPS\x01':
 		processData.GPS = processData.GPS + 1
 		temp = jsonGPSbin1(fieldID, timestamp, parsedData)
-		if ( processData.GpS == Count_mess):
+		if ( processData.GPS == Count_mess):
 			processData.GPS = 0
 			return temp		
 #get parsedData, then sum up 1000 messages before averaging them		
