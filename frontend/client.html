@@ -1,212 +1,124 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=620">
 <meta charset="utf-8">
-<style type="text/css">
-body {
-    max-width: 900px;
-    padding: 10px 10px;
-    margin: 0px auto;
-    background: #e5e5e5;
-}
-/* Layout */
-.grid {
-    display: block;
-    padding: 0;
-    /* remove intra-unit whitespace for all font families */
-    letter-spacing: -0.31em;
-    word-spacing: -0.43em;
-    /* protect against WebKit bug with optimizelegibility */
-    text-rendering: optimizespeed;
-}
-.unit-1-3 {
-    font-size: 12px;
-    width: 300px;
-    display: inline-block;
-    margin: 0px 5px 10px;
-    /* controls vertical positioning of units */
-    vertical-align: top;
-    /* reset defaults */
-    letter-spacing: normal;
-    word-spacing: normal;
-    text-rendering: auto;
-}
-.box {
-    display: block;
-    overflow: hidden;
-    min-height: 50px;
-    padding: 5px;
-    text-decoration: none;
-    background: #fff;
-}
-.x2 .box {
-    min-height: 100px;
-}
-.x3 {
-    float:left;
-}
-.x3 .box {
-    min-height: 190px;
-}
 
-ok{
-  color:green;
-}
-ohno{
-  color:red;
-}
-
-svg {
-  font: 10px sans-serif;
-  margin: 0px 5px 10px;
-}
-.line {
-  fill: none;
-  stroke: #000;
-  stroke-width: 1.5px;
-}
-.area {
-  fill: none;
-  stroke-width: 0;
-}
-.axis path, .axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
-
-</style>
 <title>PSAS - Real Time Telemetry Visualization</title>
+
+<link rel="stylesheet" type="text/css" media="screen" href="css/masonry.css"/>
+
 <script src="scripts/jquery.min.js"></script>
+<script src="scripts/masonry.pkgd.min.js"></script>
 <script src="scripts/d3.v2.js"></script>
-<script src="scripts/yaml.js"></script>
+<script src="scripts/d3_func.js"></script>
 <script src="widgets/graph.js"></script>
-<script src="widgets/gauge.js"></script>
 </head>
+
 <body>
-<div class="grid">
-  <div class="unit-1-3">
-    <div class="box"><h2 id="locked"></h2></div>
+
+<div class="container">
+  <div class="widget locked">
+    <h3 id="locked"></h3>
   </div>
-  <div class="unit-1-3 x3">
-    <div class="box"><h2 id="gps"></h2></div>
+  <div class="widget gps">
+    <h3 id="gps"></h3>
   </div>
-  <div class="unit-1-3 x2">
-    <div class="box"><h2 id="acceleration"></h2></div>
+  <div class="widget acc">
+    <h3 id="acceleration"></h3>
   </div>
 </div>
+
+<script>
+  // Graph of Z Roll
+  var rollGraph = new Graph(740, 350, Number.MAX_VALUE),
+    widgets = [rollGraph];
+</script>
+
 </body>
 </html>
 
 <script>
-
-var color = d3.scale.category10();
-
-function Path(svg, data, generatorName, generatorFunction) {
-
-    var path = svg.append("g")
-        .attr("clip-path", "url(#clip)")
-        .append("path")
-        .data([data])
-        .attr("class", generatorName);
-
-    // redraw the path
-    this.draw = function(translate) {
-        path.attr("d", generatorFunction)
-         .attr("transform", null)
-         .transition()
-         .attr("transform", "translate(" + translate + ")");
-    };
-}
-
-function zeros(size) {
-    return d3.range(size).map(function() { return 0; });
-}
-
-var rollGraph = new Graph(740, 350, Number.MAX_VALUE),
-    widgets = [rollGraph];
-
-function tick() {
-  widgets.forEach(function(widget) {
-    widget.draw();
+  // Masonry
+  docReady(function() {
+  
+    var container = document.querySelector('.container');
+    var msnry = new Masonry( container, { columnWidth: 50 });
+  
   });
-}
-
 </script>
 
 <script>
-//websocket script
-$(function () {  
-  // if user is running mozilla then use it's built-in WebSocket
-  window.WebSocket = window.WebSocket || window.MozWebSocket;
-  var connection = new WebSocket('ws://localhost:8080');
-  
-  var oldDate = new Date();
-  var oldTime = oldDate.getTime();
-  var maxheight = 0;
-  
-  log = document.getElementById('locked');
-  gps = document.getElementById('gps');
-  acc = document.getElementById('acceleration');
-  
-  connection.onopen = function () {
-    connection.send('Client Connected');
-    log.innerHTML = 'connection is open' + log.innerHTML;
-  };
-  connection.onerror = function (error) {
-    log.innerHTML = 'Rocket is <ohno>not locked</ohno>.';
-  };
-  connection.onclose = function () {
-    log.innerHTML = 'Rocket is <ohno>not locked</ohno>.';
-  };
-  
-  connection.onmessage = function (message) {
-    // try to decode json (this script assumes that each message from the server is json)
-    try {
-      var json = JSON.parse(message.data);
-      var newDate = new Date();
-      var newTime = newDate.getTime();
-      
-      if (json.fieldID == 'GPS\x01'){
-        //GPS Data
-        log.innerHTML = 'Rocket is <ok>locked</ok>.';
+  // Websocket
+  $(function () {  
+    // if user is running mozilla then use it's built-in WebSocket
+    window.WebSocket = window.WebSocket || window.MozWebSocket;
+    var connection = new WebSocket('ws://localhost:8080');
+    
+    var oldDate = new Date();
+    var oldTime = oldDate.getTime();
+    var maxheight = 0;
+    
+    log = document.getElementById('locked');
+    gps = document.getElementById('gps');
+    acc = document.getElementById('acceleration');
+    
+    connection.onopen = function () {
+      connection.send('Client Connected');
+      log.innerHTML = 'connection is open' + log.innerHTML;
+    };
+    connection.onerror = function (error) {
+      log.innerHTML = 'Rocket is <ohno>not locked</ohno>.';
+    };
+    connection.onclose = function () {
+      log.innerHTML = 'Rocket is <ohno>not locked</ohno>.';
+    };
+    
+    connection.onmessage = function (message) {
+      // try to decode json (this script assumes that each message from the server is json)
+      try {
+        var json = JSON.parse(message.data);
+        var newDate = new Date();
+        var newTime = newDate.getTime();
         
-        var height = json.Height.toFixed(3);
-        if (height > maxheight) {
-          maxheight = height;
+        if (json.fieldID == 'GPS\x01'){
+          //GPS Data
+          log.innerHTML = 'Rocket is <ok>locked</ok>.' + 
+            '<br><br>NavMode: ' + json.NavMode + 
+            '<br>Satellites: ' + json.NumOfSats;
+          
+          var height = json.Height.toFixed(3);
+          if (height > maxheight) {
+            maxheight = height;
+          }
+          
+          var gpsdata = 'Lat: &nbsp; &nbsp;' + json.Latitude.toFixed(3) + 
+            '<br>Long: ' + json.Longitude.toFixed(3) + 
+            '<br><br>Height: ' + height + 
+            '<br>Max Height: ' + maxheight;
+          gps.innerHTML = gpsdata;
+        }
+        else if (json.fieldID == 'ADIS'){
+          //ADIS Data
+          var acceleration = 'Acceleration: ' +
+            '<br>&nbsp; X ' + json.AccelerometerX.toFixed(2) +
+            '<br>&nbsp; Y ' + json.AccelerometerY.toFixed(2) + 
+            '<br>&nbsp; Z ' + json.AccelerometerZ.toFixed(2) + 
+            '<br>Magnitude: ' + json.AccelerometerMagn.toFixed(2);
+          acc.innerHTML = acceleration;
+          
+          //send data to graph every 300ms
+          if ((newTime-oldTime) > 300){
+            rollGraph.put(Math.abs(json.GyroscopeX.toFixed(2)));
+            tick();
+            oldTime = newTime;
+          }
         }
         
-        var gpsdata = 'Lat: &nbsp; &nbsp;' + json.Latitude.toFixed(3) + 
-          '<br>Long: ' + json.Longitude.toFixed(3) + 
-          '<br><br>Height: ' + height + 
-          '<br>Max Height: ' + maxheight + 
-          '<br><br>NavMode: ' + json.NavMode + 
-          '<br>Satellites: ' + json.NumOfSats;
-        gps.innerHTML = gpsdata;
+      } catch (e) {
+        console.log('This doesn\'t look like a valid JSON: ', message.data);
+        return;
       }
-      else if (json.fieldID == 'ADIS'){
-        //ADIS Data
-        var acceleration = 'Acceleration: ' +
-          '<br>X ' + json.AccelerometerX.toFixed(2) +
-          '<br>Y ' + json.AccelerometerY.toFixed(2) + 
-          '<br>Z ' + json.AccelerometerZ.toFixed(2) + 
-          '<br>Magnitude: ' + json.AccelerometerMagn.toFixed(2);
-        acc.innerHTML = acceleration;
-        
-        //send data to graph every 100ms
-        if ((newTime-oldTime) > 100){
-          rollGraph.put(Math.abs(json.GyroscopeX.toFixed(2)));
-          tick();
-          oldTime = newTime;
-        }
-      }
-      
-    } catch (e) {
-      console.log('This doesn\'t look like a valid JSON: ', message.data);
-      return;
-    }
-  };
-  
-});
+    };
+    
+  });
 </script>
