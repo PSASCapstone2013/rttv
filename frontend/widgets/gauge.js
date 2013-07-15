@@ -34,7 +34,7 @@ function Gauge(configuration) {
 
     this.render = function() {
 
-        this.svg = d3.select("body").append("svg")
+        this.svg = d3.select(".widget.gauge").append("svg")
             .attr("class", "gauge")
             .attr("width", this.config.size)
             .attr("height", this.config.size)

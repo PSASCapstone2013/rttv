@@ -12,12 +12,13 @@
 <script src="scripts/d3.v2.js"></script>
 <script src="scripts/d3_func.js"></script>
 <script src="widgets/graph.js"></script>
+<script src="widgets/gauge.js"></script>
 </head>
 
 <body>
 
 <div class="container">
-  <div class="widget locked">
+  <div class="widget lock">
     <h3 id="locked"></h3>
   </div>
   <div class="widget gps">
@@ -26,24 +27,44 @@
   <div class="widget acc">
     <h3 id="acceleration"></h3>
   </div>
+  <div class="widget zroll_graph">
+  </div>
+  <div class="widget gauge">
+  </div>
 </div>
-
-<script>
-  // Graph of Z Roll
-  var rollGraph = new Graph(740, 350, Number.MAX_VALUE),
-    widgets = [rollGraph];
-</script>
 
 </body>
 </html>
 
 <script>
+  // Gauge
+  function createGauge(label) {
+    var config =
+    {
+        size: 250,
+        label: label,
+        minorTicks: 5,
+        max: 10000,
+        yellowPercent: 80,
+        redPercent: 90
+    };
+
+    return new Gauge(config);
+  }
+
+  var gauge = createGauge("Altitude");
+  gauge.render();
+  
+  // Graph of Z Roll
+  var rollGraph = new Graph(625, 320, Number.MAX_VALUE),
+    widgets = [rollGraph, gauge];
+</script>
+
+<script>
   // Masonry
   docReady(function() {
-  
     var container = document.querySelector('.container');
     var msnry = new Masonry( container, { columnWidth: 50 });
-  
   });
 </script>
 
@@ -96,6 +117,9 @@
             '<br><br>Height: ' + height + 
             '<br>Max Height: ' + maxheight;
           gps.innerHTML = gpsdata;
+          
+          // send height data to gauge
+          gauge.put(height);
         }
         else if (json.fieldID == 'ADIS'){
           //ADIS Data
@@ -106,7 +130,7 @@
             '<br>Magnitude: ' + json.AccelerometerMagn.toFixed(2);
           acc.innerHTML = acceleration;
           
-          //send data to graph every 300ms
+          //send z roll data to graph every 300ms
           if ((newTime-oldTime) > 300){
             rollGraph.put(Math.abs(json.GyroscopeX.toFixed(2)));
             tick();

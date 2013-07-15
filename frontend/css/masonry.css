@@ -10,7 +10,7 @@ body {
 .widget {
   background: #ffffff;
 }
-.widget.locked {
+.widget.lock {
   width: 200px;
   height: 150px;
 }
@@ -21,6 +21,10 @@ body {
 .widget.acc {
   width: 250px;
   height: 150px;
+}
+.widget.zroll_graph {
+  width: 695px;
+  height: 350px;
 }
 
 ok{

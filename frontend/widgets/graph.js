@@ -23,7 +23,7 @@ function Graph(width, height, maxDataSize) {
         .y0(height)
         .y1(function(d) { return mapY(d); }),
 
-        svg = d3.select("body").append("svg")
+        svg = d3.select(".widget.zroll_graph").append("svg")
             .attr("width", width + labelMargin.left + labelMargin.right)
             .attr("height", height + labelMargin.top + labelMargin.bottom)
             .style("background-color", "white")
