@@ -1,0 +1,50 @@
+body {
+    margin: 0px auto;
+    background: #e5e5e5;
+}
+
+/* Layout */
+.container {
+	margin: 5px 5px 5px;
+}
+.widget {
+  background: #ffffff;
+}
+.widget.locked {
+  width: 200px;
+  height: 150px;
+}
+.widget.gps {
+  width: 250px;
+  height: 150px;
+}
+.widget.acc {
+  width: 250px;
+  height: 150px;
+}
+
+ok{
+  color:green;
+}
+ohno{
+  color:red;
+}
+
+svg {
+  font: 10px sans-serif;
+  margin: 0px 5px 10px;
+}
+.line {
+  fill: none;
+  stroke: #000;
+  stroke-width: 1.5px;
+}
+.area {
+  fill: none;
+  stroke-width: 0;
+}
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
