@@ -20,6 +20,7 @@ timeRate = 100000      # the rate of transmitting message to the client's browse
 
 DEBUG = (sys.argv[1:] == ['-d'])                # use '-d' option to display program output
 BAD_DEBUG_ONLY = True                           # Show only debug information for bad cases
+HEADER_LENGTH = 12                              # message header length
 
 delimiter = struct.Struct('!4sLH')              # 4 char, 2 short uint, 4 long uint, 2 short uint
 
@@ -31,6 +32,7 @@ messageType = {
     'ADIS':     struct.Struct(">12H"),          # ADIS16405 IMU
     'MPU9':     struct.Struct(">7H"),           # MPU9150 IMU
     'MPL3':     struct.Struct(">2L"),           # MPL3115A2 Pressure Sensor
+    'ROLL':     struct.Struct(">3c")            # TODO: need specifications from PSAS
 }
 
 openWebSockets = []
@@ -101,18 +103,19 @@ def main():
 
         # packet may contain multiple messages
         message = message[4:]
-        while len(message) > 0:
-            # TODO: check endianness and signed/unsigned for these bytes:
+        while len(message) > HEADER_LENGTH: # safe from messages truncated in the middle of their header
             fieldID = message[0:4]                            # four field ID charactes (4 bytes)
             timestamp = int(message[4:10].encode('hex'), 16)  # server timestamp (in ns) (6 bytes)
-            length = int(message[10:12].encode('hex'), 16) # data section length (in bytes) (2 bytes)
-            
+            length = int(message[10:12].encode('hex'), 16)    # data section length (in bytes) (2 bytes)            
+
             # workaround for flight computer bug which puts wrong data length value into ADIS header
             if fieldID == 'ADIS':
                 format = messageType.get(fieldID)
                 length = format.size
+            if len(message) < length + HEADER_LENGTH: # safe from messages truncated in the middle of their data
+                break # go to next packet
             
-            data = message[12:length+12]                 # data bytes
+            data = message[HEADER_LENGTH:length+HEADER_LENGTH] # data bytes
 
             if DEBUG and not BAD_DEBUG_ONLY:
                 print "  %s %2d %.3f" % (fieldID, length, float(timestamp)/1e9), 
@@ -127,7 +130,7 @@ def main():
 
             startTime = datetime.datetime.now()
 
-            message = message [12+length:] # select the next message 
+            message = message [HEADER_LENGTH+length:] # select the next message 
 
             # TODO: define loop termination conditions (from front-end?)
 
@@ -165,9 +168,9 @@ def initData():
         processData.ADISMess['Magnetometer'+i] =0
         
 def processData(fieldID, timestamp, length, data):
-    
-#for GPS, MPL3, MPU9 message: skip only send every 1000th message to the client's browser
-#for ADIS message: average 1000 message, then send to the client's browser
+    #for GPS, MPL3, MPU9 message: skip only send every 1000th message to the client's browser
+    #for ADIS message: average 1000 message, then send to the client's browser
+
     # handle error message
     if fieldID == 'ERRO':
         return jsonERRO(fieldID, timestamp, data)
@@ -179,10 +182,9 @@ def processData(fieldID, timestamp, length, data):
             return None # quitely skip it
         if DEBUG:
             print "  warning: unable to parse message of type", fieldID
-            print "    unknown format:", format == None
-            print "    data length:", len(data)
-            print "    format size:", format.size
-        exit()
+            # print "    unknown format:", format == None
+            # print "    data length:", len(data)
+            # print "    format size:", format.size
         return None # skip this message
 
     parsedData = format.unpack(data) # tuple containing parsed data
