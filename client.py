@@ -19,6 +19,7 @@ TIMEOUT = 5            # time in seconds to wait for a packet
 timeRate = 100000      # the rate of transmitting message to the client's browser    
 
 DEBUG = (sys.argv[1:] == ['-d'])                # use '-d' option to display program output
+BAD_DEBUG_ONLY = True                           # Show only debug information for bad cases
 
 delimiter = struct.Struct('!4sLH')              # 4 char, 2 short uint, 4 long uint, 2 short uint
 
@@ -76,18 +77,22 @@ def main():
         try:
             message = sock.recv(PACKET_SIZE)
         except socket.timeout:
-            print "Timeout:", TIMEOUT, "seconds."
-            print "Solution 1: check whether the server is running"
-            print "Solution 2: check whether you are using the right port number"
+            if DEBUG and not BAD_DEBUG_ONLY:
+                print "Timeout:", TIMEOUT, "seconds."
+                print "Solution 1: check whether the server is running"
+                print "Solution 2: check whether you are using the right port number"
             # TODO: Let front-end know about timeout if needed
             continue # stay in the loop and wait for another packet
 
+        if DEBUG and BAD_DEBUG_ONLY:
+            printDot()
+            
         # get and check packet sequence number
         seq = int(message[0:4].encode('hex'), 16)             # sequence number (4 bytes)
         checkForLostPackets(seq, lastSeq)
         lastSeq = seq
-        if DEBUG:
-            print seq
+        if DEBUG and not BAD_DEBUG_ONLY:
+            print seq, "(0x%.4x)" % seq
 
         # dump packet to log file
         logFile.write(delimiter.pack('SEQN', seq, len(message))) # add packet separator
@@ -98,27 +103,32 @@ def main():
         message = message[4:]
         while len(message) > 0:
             # TODO: check endianness and signed/unsigned for these bytes:
-            fieldID   = message[0:4]                          # four field ID charactes (4 bytes)
+            fieldID = message[0:4]                            # four field ID charactes (4 bytes)
             timestamp = int(message[4:10].encode('hex'), 16)  # server timestamp (in ns) (6 bytes)
-            length    = int(message[10:12].encode('hex'), 16) # data section length (in bytes) (2 bytes)
-            data      = message[12:length+12]                 # data bytes
+            length = int(message[10:12].encode('hex'), 16) # data section length (in bytes) (2 bytes)
+            
+            # workaround for flight computer bug which puts wrong data length value into ADIS header
+            if fieldID == 'ADIS':
+                format = messageType.get(fieldID)
+                length = format.size
+            
+            data = message[12:length+12]                 # data bytes
 
-            if DEBUG:
+            if DEBUG and not BAD_DEBUG_ONLY:
                 print "  %s %2d %.3f" % (fieldID, length, float(timestamp)/1e9), 
 
             jsonObj = processData(fieldID, timestamp, length, data)
             endTime = datetime.datetime.now()
             if ( (endTime - startTime).microseconds > timeRate):
    	        sendJsonObj(checkBeforeSend(processData.ADISMess, fieldID))
-                sendJsonObj(processData.lastGPSMess)
-                sendJsonObj(processData.lastMPL3Mess)
-                sendJsonObj(processData.lastMPU9Mess)
+            sendJsonObj(processData.lastGPSMess)
+            sendJsonObj(processData.lastMPL3Mess)
+            sendJsonObj(processData.lastMPU9Mess)
 
-                startTime = datetime.datetime.now()
+            startTime = datetime.datetime.now()
 
             message = message [12+length:] # select the next message 
 
-            #exit() # TEMP: for debugging
             # TODO: define loop termination conditions (from front-end?)
 
 def checkBeforeSend(jsonObj, fieldID):
@@ -139,7 +149,8 @@ def checkBeforeSend(jsonObj, fieldID):
 def checkForLostPackets(seq, lastSeq):
     packetsLost = seq - lastSeq - 1
     if packetsLost > 0:
-        print packetsLost, "packets were lost between", lastSeq, "and", seq
+        if DEBUG and not BAD_DEBUG_ONLY:
+            print packetsLost, "packets were lost between", lastSeq, "and", seq
         # TODO: pass a message to front-end to notify about lost packets; need specifications
 
 def initData():
@@ -152,10 +163,9 @@ def initData():
         processData.ADISMess['Gyroscope'+i] =  0
         processData.ADISMess['Accelerometer'+i] = 0
         processData.ADISMess['Magnetometer'+i] =0
-
-
+        
 def processData(fieldID, timestamp, length, data):
-
+    
 #for GPS, MPL3, MPU9 message: skip only send every 1000th message to the client's browser
 #for ADIS message: average 1000 message, then send to the client's browser
     # handle error message
@@ -165,12 +175,18 @@ def processData(fieldID, timestamp, length, data):
     # parse data
     format = messageType.get(fieldID)
     if format == None or len(data) <> format.size: # validate data format
+        if(fieldID == 'ADIS'): # This ADIS is truncted by the fragmented packet. Not my fault!
+            return None # quitely skip it
         if DEBUG:
-            print "warning: unable to parse message of type", fieldID
+            print "  warning: unable to parse message of type", fieldID
+            print "    unknown format:", format == None
+            print "    data length:", len(data)
+            print "    format size:", format.size
+        exit()
         return None # skip this message
 
     parsedData = format.unpack(data) # tuple containing parsed data
-    if DEBUG:
+    if DEBUG and not BAD_DEBUG_ONLY:
         print repr(parsedData)
 
     if fieldID == 'SEQN':
@@ -293,5 +309,22 @@ def sendJsonObj(jsonObj):
         tornado.ioloop.IOLoop.instance().add_callback(webSocket.write_message, json.dumps(jsonObj))
     openWebSocketsLock.release()
 
+def printDot():
+    # ================================= debug output =================================
+    printDot.time_str = datetime.datetime.now().strftime("%H:%M:%S")
+    if printDot.time_str_prev <> printDot.time_str:
+        if printDot.total > 0:
+            print "(%d)" % printDot.total
+        printDot.total = 0
+        print printDot.time_str, "",
+    sys.stdout.write('.')
+    printDot.total += 1
+    printDot.time_str_prev = printDot.time_str
+    # ================================================================================
+printDot.total = 0
+printDot.time_str = ""
+printDot.time_str_prev = ""
+    
+    
 if __name__ == "__main__":
     main()
