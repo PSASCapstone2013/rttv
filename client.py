@@ -12,8 +12,8 @@ import tornado.websocket
 
 
 IP_ADDRESS = ""        # dafault IP
-PORT = 36000           # default port used in PSAS server-client example
-#PORT = 35001           # port used by Ashley; didn't work with PSAS fake computer (Bogdan)
+PORT = 35001           # new port used in PSAS server-client example
+#PORT = 36000           # old port used in PSAS server-client example
 PACKET_SIZE = 4096     # maximum packet size to receive
 TIMEOUT = 5            # time in seconds to wait for a packet
 timeRate = 100000      # the rate of transmitting message to the client's browser    
@@ -73,7 +73,6 @@ def main():
     # listen socket
     while True:
         # receive packet
-        print "receiving packets"
         try:
             message = sock.recv(PACKET_SIZE)
         except socket.timeout:
