@@ -35,27 +35,27 @@ messageType = {
     'ROLL':     struct.Struct(">3c")            # TODO: need specifications from PSAS
 }
 
-openWebSockets = []
-openWebSocketsLock = thread.allocate_lock()
+openWebSockets = [] #an array of open websocket connections
+openWebSocketsLock = thread.allocate_lock() #lock used when accessing the thread running the Tornado code
 
 class FrontEndWebSocket(tornado.websocket.WebSocketHandler):
-    def open(self):
+    def open(self): #appends a new connection to the end of the array of connections and generates its position in the array 
         openWebSocketsLock.acquire()
         openWebSockets.append(self)
         self.list_position = len(openWebSockets) - 1
         openWebSocketsLock.release()
     def on_message(self,message):
         pass
-    def on_close(self):
+    def on_close(self): #closes a connection in the array of connections by removing it from is position
         openWebSocketsLock.acquire()
         openWebSockets.pop(self.list_position)
         openWebSocketsLock.release()
 
 application = tornado.web.Application([
     (r"/", FrontEndWebSocket),
-    ])
+])
 
-def tornadoThread(arg1, arg2):
+def tornadoThread(arg1, arg2): #defines a thread that runs a Tornado IO loop that listens to port 8080
     application.listen(8080)
     tornado.ioloop.IOLoop.instance().start()
 
@@ -88,7 +88,7 @@ def main():
 
         if DEBUG and BAD_DEBUG_ONLY:
             printDot()
-            
+
         # get and check packet sequence number
         seq = int(message[0:4].encode('hex'), 16)             # sequence number (4 bytes)
         checkForLostPackets(seq, lastSeq)
@@ -114,7 +114,7 @@ def main():
                 length = format.size
             if len(message) < length + HEADER_LENGTH: # safe from messages truncated in the middle of their data
                 break # go to next packet
-            
+
             data = message[HEADER_LENGTH:length+HEADER_LENGTH] # data bytes
 
             if DEBUG and not BAD_DEBUG_ONLY:
@@ -123,7 +123,7 @@ def main():
             jsonObj = processData(fieldID, timestamp, length, data)
             endTime = datetime.datetime.now()
             if ( (endTime - startTime).microseconds > timeRate):
-   	        sendJsonObj(checkBeforeSend(processData.ADISMess, fieldID))
+                sendJsonObj(checkBeforeSend(processData.ADISMess, fieldID))
             sendJsonObj(processData.lastGPSMess)
             sendJsonObj(processData.lastMPL3Mess)
             sendJsonObj(processData.lastMPU9Mess)
@@ -136,18 +136,18 @@ def main():
 
 def checkBeforeSend(jsonObj, fieldID):
     if (fieldID == 'ADIS'):
-	
+
         for i in ['X', 'Y', 'Z']:
             jsonObj['Gyroscope'+i] = (jsonObj['Gyroscope'+i]  ) / processData.ADISCount    
             jsonObj['Accelerometer'+i] = (jsonObj['Accelerometer'+i]  ) / processData.ADISCount    
             jsonObj['Magnetometer'+i] = (jsonObj['Magnetometer'+i]  ) / processData.ADISCount	
-	
+
         jsonObj['GyroscopeMagn'] = magnitude(jsonObj['GyroscopeX'], jsonObj['GyroscopeY'], jsonObj['GyroscopeZ'])
-	jsonObj['AccelerometerMagn'] = magnitude(jsonObj['AccelerometerX'], jsonObj['AccelerometerY'], jsonObj['AccelerometerZ'])
-	jsonObj['MagnetometerMagn'] = magnitude(jsonObj['MagnetometerX'], jsonObj['MagnetometerY'], jsonObj['MagnetometerZ'])
+        jsonObj['AccelerometerMagn'] = magnitude(jsonObj['AccelerometerX'], jsonObj['AccelerometerY'], jsonObj['AccelerometerZ'])
+        jsonObj['MagnetometerMagn'] = magnitude(jsonObj['MagnetometerX'], jsonObj['MagnetometerY'], jsonObj['MagnetometerZ'])
         initData()
     return jsonObj
-		
+
 
 def checkForLostPackets(seq, lastSeq):
     packetsLost = seq - lastSeq - 1
@@ -166,7 +166,7 @@ def initData():
         processData.ADISMess['Gyroscope'+i] =  0
         processData.ADISMess['Accelerometer'+i] = 0
         processData.ADISMess['Magnetometer'+i] =0
-        
+
 def processData(fieldID, timestamp, length, data):
     #for GPS, MPL3, MPU9 message: skip only send every 1000th message to the client's browser
     #for ADIS message: average 1000 message, then send to the client's browser
@@ -196,7 +196,7 @@ def processData(fieldID, timestamp, length, data):
 
     elif fieldID == 'GPS\x01':
         processData.lastGPSMess = jsonGPSbin1(fieldID, timestamp, parsedData)
-        
+
 #get parsedData, then sum up 1000 messages before averaging them
     elif fieldID == 'ADIS':
         temp = jsonADIS(fieldID, timestamp, parsedData)
@@ -209,10 +209,10 @@ def processData(fieldID, timestamp, length, data):
 
     elif fieldID == 'MPU9':
         processData.lastMPU9Mess = jsonMPU9(fieldID, timestamp, parsedData)
-        
+
     elif fieldID == 'MPL3':
         processData.lastMPL3Mess = jsonMPL3(fieldID, timestamp, parsedData)
-    
+
 
 def jsonGPSbin1(fieldID, timestamp, parsedData):
     obj = {
@@ -243,22 +243,22 @@ def jsonADIS(fieldID, timestamp, parsedData):
         'GyroscopeY': parsedData[2],
         'GyroscopeZ': parsedData[3],
         # 'GyroscopeMagn': magnitude(parsedData[1], parsedData[2], parsedData[3]),
-        
+
         'AccelerometerX': parsedData[4],
         'AccelerometerY': parsedData[5],
         'AccelerometerZ': parsedData[6],
         # 'AccelerometerMagn': magnitude(parsedData[4], parsedData[5], parsedData[6]),
-        
+
         'MagnetometerX': parsedData[7],
         'MagnetometerY': parsedData[8],
         'MagnetometerZ': parsedData[9],
         # 'MagnetometerMagn': magnitude(parsedData[7], parsedData[8], parsedData[9]),
-        
+
         'Temperature': parsedData[10],
         'AuxiliaryADC': parsedData[11]
     }
     return obj
-    
+
 def jsonMPU9(fieldID, timestamp, parsedData):
     # TODO: ask sponsots about field names
     obj = {
@@ -304,12 +304,16 @@ def sendJsonObj(jsonObj):
     # To decode the JSON objects in Python, use:
     # objDecoded = json.loads(jsonObj)
     # print objDecoded['fieldID'], objDecoded['timestamp']
-    openWebSocketsLock.acquire()
-    for webSocket in openWebSockets:
-        if webSocket is None:
+    openWebSocketsLock.acquire() 
+    for webSocket in openWebSockets: #iterates through every open connections in the array
+        if webSocket is None: #if the connection is null
             print "It is none"
-        tornado.ioloop.IOLoop.instance().add_callback(webSocket.write_message, json.dumps(jsonObj))
-    openWebSocketsLock.release()
+        tornado.ioloop.IOLoop.instance().add_callback(webSocket.write_message, json.dumps(jsonObj)) #creates a write event that will run during the next iteration
+                                                                                                    #of the Tornado io loop. The event will send the json object
+                                                                                                    #to the front end. See http://www.tornadoweb.org/en/stable/ioloop.html#callbacks-and-timeouts
+                                                                                                    #and http://www.tornadoweb.org/en/stable/websocket.html?highlight=websockets#output
+                                                                                                    #and http://docs.python.org/2/library/json.html#basic-usage
+                                                                                                    #for more detailed info
 
 def printDot():
     # ================================= debug output =================================
@@ -326,7 +330,7 @@ def printDot():
 printDot.total = 0
 printDot.time_str = ""
 printDot.time_str_prev = ""
-    
-    
+
+
 if __name__ == "__main__":
     main()
