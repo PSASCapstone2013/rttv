@@ -1,9 +1,11 @@
-function Gauge(configuration) {
+function Gauge(config) {
     var self = this;
 
     this.value = 0;
 
-    this.config = configuration;
+    this.config = config;
+
+    this.id = config.id || "guage";
 
     this.config.labelTextConfig = {
         size: Math.round(this.config.size / 9),
@@ -21,12 +23,12 @@ function Gauge(configuration) {
 
     this.config.radius = this.config.size * 0.97 / 2;
 
-    this.config.min = configuration.min || 0;
-    this.config.max = configuration.max || 100;
+    this.config.min = config.min || 0;
+    this.config.max = config.max || 100;
     this.config.range = this.config.max - this.config.min;
 
-    this.config.majorTicks = configuration.majorTicks || 5;
-    this.config.minorTicks = configuration.minorTicks || 2;
+    this.config.majorTicks = config.majorTicks || 5;
+    this.config.minorTicks = config.minorTicks || 2;
 
     this.config.greenColor  = "#109618";
     this.config.yellowColor = "#FF9900";
@@ -34,7 +36,7 @@ function Gauge(configuration) {
 
     this.render = function() {
 
-        this.svg = d3.select(".widget.gauge").append("svg")
+        this.svg = d3.select(".widget." + this.id).append("svg")
             .attr("class", "gauge")
             .attr("width", this.config.size)
             .attr("height", this.config.size)

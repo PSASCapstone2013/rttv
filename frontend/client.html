@@ -17,47 +17,49 @@
 
 <body>
 
-<div class="container">
-  <div class="widget lock">
-    <h3 id="locked"></h3>
-  </div>
-  <div class="widget gps">
-    <h3 id="gps"></h3>
-  </div>
-  <div class="widget acc">
-    <h3 id="acceleration"></h3>
-  </div>
-  <div class="widget zroll_graph">
-  </div>
-  <div class="widget gauge">
-  </div>
-</div>
+<div class="container"/>
 
 </body>
 </html>
 
 <script>
-  // Gauge
-  function createGauge(label) {
-    var config =
-    {
-        size: 250,
-        label: label,
-        minorTicks: 5,
-        max: 10000,
-        yellowPercent: 80,
-        redPercent: 90
+
+  var
+    graph_config = {
+      id: "baz",
+      yAxisLabel: 'Z Roll',
+      width: 625, height: 320,
+      maxDataSize: Number.MAX_VALUE
+    },
+    lock_config = {
+      id: "lock"
+    },
+    gauge_config = {
+      id: "altitude",
+      size: 250,
+      label: "Altitude",
+      minorTicks: 5,
+      max: 10000,
+      yellowPercent: 80,
+      redPercent: 90
+    },
+    gps_config = {
+      id: "gps",
+    },
+    acc_config = {
+      id: "acceleration"
     };
 
-    return new Gauge(config);
-  }
-
-  var gauge = createGauge("Altitude");
-  gauge.render();
+  var configs = [graph_config, lock_config, gauge_config, gps_config, acc_config];
   
-  // Graph of Z Roll
-  var rollGraph = new Graph(625, 320, Number.MAX_VALUE),
-    widgets = [rollGraph, gauge];
+  configs.forEach(function(config) {
+    $('.container').append("<div class=\"widget " + config.id + "\" id=\"widget " + config.id + "\"></div>");
+  });
+
+  var gauge = new Gauge(gauge_config);
+  var rollGraph = new Graph(graph_config);
+  widgets = [rollGraph, gauge];
+  gauge.render();
 </script>
 
 <script>
@@ -79,9 +81,9 @@
     var oldTime = oldDate.getTime();
     var maxheight = 0;
     
-    log = document.getElementById('locked');
-    gps = document.getElementById('gps');
-    acc = document.getElementById('acceleration');
+    log = document.getElementById('widget lock');
+    gps = document.getElementById('widget gps');
+    acc = document.getElementById('widget acceleration');
     
     connection.onopen = function () {
       connection.send('Client Connected');

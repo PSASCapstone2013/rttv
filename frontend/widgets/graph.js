@@ -1,13 +1,17 @@
-function Graph(width, height, maxDataSize) {
+function Graph(config) {
     var dataCount = 0, // keep track of the number of data points we receive
                        // when we reach maxDataSize, we stop scaling x-axis and start scrolling
         data = zeros(0),
-
-        labelMargin = {top: 10, right: 10, bottom: 20, left: 60};
+        id = config.id || "Graph",
+        xAxisLabel = config.xAxisLabel || "X",
+        yAxisLabel = config.yAxisLabel || "Y",
+        labelMargin = {top: 10, right: 10, bottom: 20, left: 60},
         // default to 0 x/y domain, auto-scale as new data comes in
         xDomain = [0, 0],
         yDomain = [Number.MAX_VALUE, Number.MIN_VALUE],
 
+        width = config.width, height = config.height,
+        maxDataSize = config.maxDataSize || 100,
         mapX = d3.scale.linear().domain(xDomain).range([0, width]),
         mapY = d3.scale.linear().domain([0, 0]).range([height, 0]),
 
@@ -23,7 +27,7 @@ function Graph(width, height, maxDataSize) {
         .y0(height)
         .y1(function(d) { return mapY(d); }),
 
-        svg = d3.select(".widget.zroll_graph").append("svg")
+        svg = d3.select(".widget." + id).append("svg")
             .attr("width", width + labelMargin.left + labelMargin.right)
             .attr("height", height + labelMargin.top + labelMargin.bottom)
             .style("background-color", "white")
@@ -53,7 +57,7 @@ function Graph(width, height, maxDataSize) {
         .attr("x", -height / 2)
         .attr("dy", "1em")
         .style("text-anchor", "middle")
-        .text("Z Roll");
+        .text(yAxisLabel);
 
     // add data to the list
     this.put = function(value) {
