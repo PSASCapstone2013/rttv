@@ -91,7 +91,11 @@ def main():
 
         # get and check packet sequence number
         seq = int(message[0:4].encode('hex'), 16)             # sequence number (4 bytes)
-        checkForLostPackets(seq, lastSeq)
+	temp = datetime.datetime.now()
+	packetAnalyze['PacketReceived'] = packetAnalyze['PacketReceived'] + 1
+	packetsLost = checkForLostPackets(seq, lastSeq,packetAnalyze['latestPacketReceived'], temp)
+        packetAnalyze['PacketLost'] = packetAnalyze['PacketLost'].append(packetLost)	
+	packetAnalyze['latestPacketReceived'] = temp
         lastSeq = seq
         if DEBUG and not BAD_DEBUG_ONLY:
             print seq, "(0x%.4x)" % seq
@@ -123,16 +127,29 @@ def main():
             jsonObj = processData(fieldID, timestamp, length, data)
             endTime = datetime.datetime.now()
             if ( (endTime - startTime).microseconds > timeRate):
-                sendJsonObj(checkBeforeSend(processData.ADISMess, fieldID))
-            sendJsonObj(processData.lastGPSMess)
-            sendJsonObj(processData.lastMPL3Mess)
-            sendJsonObj(processData.lastMPU9Mess)
+                if(NoPacketReceived()):
+                    sendJsonObj(jsonERRO('ERRO',0,"no packet revceived"))
+		    print "No packet received"
+                else:
+                    sendJsonObj(checkBeforeSend(processData.ADISMess, fieldID))
+                    sendJsonObj(processData.lastGPSMess)
+                    sendJsonObj(processData.lastMPL3Mess)
+                    sendJsonObj(processData.lastMPU9Mess)
+                sendJsonObj(packetAnalyze)
+		initData()
 
             startTime = datetime.datetime.now()
 
             message = message [HEADER_LENGTH+length:] # select the next message 
 
             # TODO: define loop termination conditions (from front-end?)
+
+
+def noPacketReceived():
+    if (( processData.ADISMess == {}) and ( processData.lastGPSMess == {}) and (processData.lastMPL3Mess == {}) and (processData.lastMPU9 == {})):
+        return True
+    return False
+
 
 def checkBeforeSend(jsonObj, fieldID):
     if (fieldID == 'ADIS'):
@@ -149,14 +166,23 @@ def checkBeforeSend(jsonObj, fieldID):
     return jsonObj
 
 
-def checkForLostPackets(seq, lastSeq):
+def checkForLostPackets(seq, lastSeq, previousPacketReceived, latestPacketReceived):
     packetsLost = seq - lastSeq - 1
     if packetsLost > 0:
         if DEBUG and not BAD_DEBUG_ONLY:
             print packetsLost, "packets were lost between", lastSeq, "and", seq
         # TODO: pass a message to front-end to notify about lost packets; need specifications
+        obj = { 
+	    'From'      : previousPacketReceived,
+	    'To'  	: latestPacketReceived,
+   	    'PacketLost': packetLost
+	    }
+    return obj
+
+	
 
 def initData():
+    packetAnalyze = initPacketAnalyze()
     processData.lastGPSMess = {}
     processData.lastMPU9Mess = {}
     processData.lastMPL3Mess = {}
@@ -168,8 +194,7 @@ def initData():
         processData.ADISMess['Magnetometer'+i] =0
 
 def processData(fieldID, timestamp, length, data):
-    #for GPS, MPL3, MPU9 message: skip only send every 1000th message to the client's browser
-    #for ADIS message: average 1000 message, then send to the client's browser
+   
 
     # handle error message
     if fieldID == 'ERRO':
@@ -190,6 +215,7 @@ def processData(fieldID, timestamp, length, data):
     parsedData = format.unpack(data) # tuple containing parsed data
     if DEBUG and not BAD_DEBUG_ONLY:
         print repr(parsedData)
+\
 
     if fieldID == 'SEQN':
         return None # skip
@@ -212,6 +238,15 @@ def processData(fieldID, timestamp, length, data):
 
     elif fieldID == 'MPL3':
         processData.lastMPL3Mess = jsonMPL3(fieldID, timestamp, parsedData)
+
+
+def initPacketAnalyze():
+    obj = {
+        'fieldID': 'Analyze',
+        'PacketReceived': 0,
+        'PacketLost':[],
+    }
+    return obj
 
 
 def jsonGPSbin1(fieldID, timestamp, parsedData):

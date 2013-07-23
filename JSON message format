@@ -1,5 +1,5 @@
 GPS:
-Obj = {'gps':{
+Obj = {
 		'fieldID': 4 bytes,
 		'timestamp': 6 bytes,
 		'AgeOfDiff': 1byte,
@@ -15,13 +15,12 @@ Obj = {'gps':{
 		'StdDevResid': float,
 		'NavMode': 2 bytes,
 		'ExtendedAgeOfDiff': 2 bytes
-	     }
+	     
 	}
 
 ADIS:
 
-Obj = {'ADIS':{
-		'fieldID': 4 bytes,
+Obj = {		'fieldID': 4 bytes,
 		'timestamp': 6 bytes,
 		'PowerSupply': 2 bytes,
 		'GyroscopeX': 2bytes,
@@ -38,7 +37,33 @@ Obj = {'ADIS':{
 		'MagnetometerMagn': float,
 		'Temperature': 2 bytes,
 		'AuxiliaryADC': 2 bytes
-	      }
+	      
 	}
+
+ERRO:
+obj = {
+        'fieldID': fieldID,
+        'timestamp': timestamp,
+        'message': data,
+    }
+
+Packet Analyze:
+ obj = {
+        'fieldID': 'Analyze',
+        'PacketReceived'   	#number of packet received in a specific time interval
+        'PacketLost':[],
+    }
+# packetLost is a list of lost packet, each element has:
+{
+	'From'      : time when we start loosing packets
+	'To'  	    : time when we receive a new packet
+   	'PacketLost': Number of packets lost
+        
+	
+
+
+
+
+
 
 
