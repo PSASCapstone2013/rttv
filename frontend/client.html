@@ -1,65 +1,53 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="utf-8">
+  <head>
+    <meta charset="utf-8">
 
-<title>PSAS - Real Time Telemetry Visualization</title>
+    <title>PSAS - Real Time Telemetry Visualization</title>
 
-<link rel="stylesheet" type="text/css" media="screen" href="css/masonry.css"/>
+    <link rel="stylesheet" type="text/css" media="screen" href="css/masonry.css"/>
 
-<script src="scripts/jquery.min.js"></script>
-<script src="scripts/masonry.pkgd.min.js"></script>
-<script src="scripts/d3.v2.js"></script>
-<script src="scripts/d3_func.js"></script>
-<script src="widgets/graph.js"></script>
-<script src="widgets/gauge.js"></script>
-</head>
+    <script src="scripts/jquery.min.js"></script>
+    <script src="scripts/masonry.pkgd.min.js"></script>
+    <script src="scripts/d3.v2.js"></script>
+    <script src="scripts/d3_func.js"></script>
+    <script src="configs/test_config.js"></script>
+    <script src="widgets/gauge.js"></script>
+    <script src="widgets/line_graph.js"></script>
+    <script src="widgets/text_widget.js"></script>
+  </head>
 
-<body>
+  <body>
+    <div class="container"/>
+  </body>
 
-<div class="container"/>
-
-</body>
 </html>
 
 <script>
 
-  var
-    graph_config = {
-      id: "baz",
-      yAxisLabel: 'Z Roll',
-      width: 625, height: 320,
-      maxDataSize: Number.MAX_VALUE
-    },
-    lock_config = {
-      id: "lock"
-    },
-    gauge_config = {
-      id: "altitude",
-      size: 250,
-      label: "Altitude",
-      minorTicks: 5,
-      max: 10000,
-      yellowPercent: 80,
-      redPercent: 90
-    },
-    gps_config = {
-      id: "gps",
-    },
-    acc_config = {
-      id: "acceleration"
-    };
+  var lockWidget = new TextWidget({id: 'lock'});
 
-  var configs = [graph_config, lock_config, gauge_config, gps_config, acc_config];
-  
+  var makeWidget = function(config) {
+    switch(config.type) {
+      case 'LineGraph':
+      return new LineGraph(config);
+      case 'Text':
+      return new TextWidget(config);
+      case 'Gauge':
+      return new Gauge(config);
+      default:
+      return null;
+    }
+  }
+
+  widgets = [];
   configs.forEach(function(config) {
-    $('.container').append("<div class=\"widget " + config.id + "\" id=\"widget " + config.id + "\"></div>");
+    var widget = makeWidget(config);
+    if (widget != null) {
+      widgets.push(widget);
+    }
   });
 
-  var gauge = new Gauge(gauge_config);
-  var rollGraph = new Graph(graph_config);
-  widgets = [rollGraph, gauge];
-  gauge.render();
 </script>
 
 <script>
@@ -76,75 +64,36 @@
     // if user is running mozilla then use it's built-in WebSocket
     window.WebSocket = window.WebSocket || window.MozWebSocket;
     var connection = new WebSocket('ws://localhost:8080');
-    
-    var oldDate = new Date();
-    var oldTime = oldDate.getTime();
-    var maxheight = 0;
-    
-    log = document.getElementById('widget lock');
-    gps = document.getElementById('widget gps');
-    acc = document.getElementById('widget acceleration');
+    var oldTime = new Date().getTime();
     
     connection.onopen = function () {
       connection.send('Client Connected');
-      log.innerHTML = 'connection is open' + log.innerHTML;
+      lockWidget.setText('connection is open');
     };
     connection.onerror = function (error) {
-      log.innerHTML = 'Rocket is <ohno>not locked</ohno>.';
+      lockWidget.setText('Rocket is <ohno>not locked</ohno>.');
     };
     connection.onclose = function () {
-      log.innerHTML = 'Rocket is <ohno>not locked</ohno>.';
+      lockWidget.setText('Rocket is <ohno>not locked</ohno>.');
     };
     
     connection.onmessage = function (message) {
       // try to decode json (this script assumes that each message from the server is json)
       try {
         var json = JSON.parse(message.data);
-        var newDate = new Date();
-        var newTime = newDate.getTime();
+        var newTime = new Date().getTime();
         
-        if (json.fieldID == 'GPS\x01'){
-          //GPS Data
-          log.innerHTML = 'Rocket is <ok>locked</ok>.' + 
-            '<br><br>NavMode: ' + json.NavMode + 
-            '<br>Satellites: ' + json.NumOfSats;
-          
-          var height = json.Height.toFixed(3);
-          if (height > maxheight) {
-            maxheight = height;
-          }
-          
-          var gpsdata = 'Lat: &nbsp; &nbsp;' + json.Latitude.toFixed(3) + 
-            '<br>Long: ' + json.Longitude.toFixed(3) + 
-            '<br><br>Height: ' + height + 
-            '<br>Max Height: ' + maxheight;
-          gps.innerHTML = gpsdata;
-          
-          // send height data to gauge
-          gauge.put(height);
-        }
-        else if (json.fieldID == 'ADIS'){
-          //ADIS Data
-          var acceleration = 'Acceleration: ' +
-            '<br>&nbsp; X ' + json.AccelerometerX.toFixed(2) +
-            '<br>&nbsp; Y ' + json.AccelerometerY.toFixed(2) + 
-            '<br>&nbsp; Z ' + json.AccelerometerZ.toFixed(2) + 
-            '<br>Magnitude: ' + json.AccelerometerMagn.toFixed(2);
-          acc.innerHTML = acceleration;
-          
-          //send z roll data to graph every 300ms
-          if ((newTime-oldTime) > 300){
-            rollGraph.put(Math.abs(json.GyroscopeX.toFixed(2)));
-            tick();
-            oldTime = newTime;
-          }
-        }
+        widgets.forEach(function(widget) {
+          widget.putJSON(json);
+          widget.draw();
+        });
+
+        oldTime = newTime;
         
       } catch (e) {
         console.log('This doesn\'t look like a valid JSON: ', message.data);
         return;
       }
     };
-    
   });
 </script>
