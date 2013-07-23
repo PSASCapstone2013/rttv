@@ -50,7 +50,8 @@ obj = {
 Packet Analyze:
  obj = {
         'fieldID': 'Analyze',
-        'PacketReceived'   	#number of packet received in a specific time interval
+        'PacketReceived':   	#number of packet received in a specific time interval
+	'latestPacketReceived': timestamp of the latest packet received 
         'PacketLost':[],
     }
 # packetLost is a list of lost packet, each element has:
