@@ -1,10 +1,12 @@
-function Graph(config) {
+function LineGraph(config) {
+    $('.container').append("<div class=\"widget " + config.id + "\" id=\"widget " + config.id + "\"></div>");
+
     var dataCount = 0, // keep track of the number of data points we receive
                        // when we reach maxDataSize, we stop scaling x-axis and start scrolling
         data = zeros(0),
-        id = config.id || "Graph",
-        xAxisLabel = config.xAxisLabel || "X",
-        yAxisLabel = config.yAxisLabel || "Y",
+        id = config.id || 'LineGraph',
+        xAxisLabel = config.xAxisLabel || 'X',
+        yAxisLabel = config.controls[0].label || 'Y',
         labelMargin = {top: 10, right: 10, bottom: 20, left: 60},
         // default to 0 x/y domain, auto-scale as new data comes in
         xDomain = [0, 0],
@@ -59,8 +61,22 @@ function Graph(config) {
         .style("text-anchor", "middle")
         .text(yAxisLabel);
 
+    // TODO currently duplicated across all widgets... I want inheritence dammit!
+    this.putJSON = function(jsonObject) {
+        config.controls.forEach(function(control) {
+            // TODO bail if source does not cointain '.'
+            var source = control.source.split('.');
+            if (source[0] == jsonObject.fieldID) {
+                if (source[1] in jsonObject) {
+                    var value = eval('jsonObject.' + source[1]);
+                    self.put(control.label, value);
+                }
+            }
+        });
+    };
+
     // add data to the list
-    this.put = function(value) {
+    this.put = function(controlName, value) {
         // pop the old data point off the front
         // data.pop();
 
