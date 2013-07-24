@@ -12,8 +12,8 @@ import tornado.websocket
 
 
 IP_ADDRESS = ""        # dafault IP
-#PORT = 35001           # new port used in PSAS server-client example
-PORT = 36000           # old port used in PSAS server-client example
+PORT = 35001           # new port used in PSAS server-client example
+#PORT = 36000           # old port used in PSAS server-client example
 PACKET_SIZE = 4096     # maximum packet size to receive
 TIMEOUT = 5            # time in seconds to wait for a packet
 timeRate = 100000      # the rate of transmitting message to the client's browser    
@@ -92,11 +92,11 @@ def main():
 
         # get and check packet sequence number
         seq = int(message[0:4].encode('hex'), 16)             # sequence number (4 bytes)
-	temp = datetime.datetime.now()
-	processData.packetAnalyze['PacketReceived'] = processData.packetAnalyze['PacketReceived'] + 1
-	packetsLost = checkForLostPackets(seq, lastSeq,processData.packetAnalyze['latestPacketReceived'], temp)
+        temp = datetime.datetime.now()
+        processData.packetAnalyze['PacketReceived'] = processData.packetAnalyze['PacketReceived'] + 1
+        packetsLost = checkForLostPackets(seq, lastSeq,processData.packetAnalyze['latestPacketReceived'], temp)
         processData.packetAnalyze['PacketLost'].append(packetsLost)	
-	processData.packetAnalyze['latestPacketReceived'] = temp
+        processData.packetAnalyze['latestPacketReceived'] = temp
         lastSeq = seq
         if DEBUG and not BAD_DEBUG_ONLY:
             print seq, "(0x%.4x)" % seq
@@ -128,16 +128,16 @@ def main():
             jsonObj = processData(fieldID, timestamp, length, data)
             endTime = datetime.datetime.now()
             if ( (endTime - startTime).microseconds > timeRate):
-                if(NoPacketReceived()):
+                if(noPacketReceived()):
                     sendJsonObj(jsonERRO('ERRO',0,"no packet revceived"))
-		    print "No packet received"
+                    print "No packet received"
                 else:
                     sendJsonObj(checkBeforeSend(processData.ADISMess, fieldID))
                     sendJsonObj(processData.lastGPSMess)
                     sendJsonObj(processData.lastMPL3Mess)
                     sendJsonObj(processData.lastMPU9Mess)
                 sendJsonObj(processData.packetAnalyze)
-		initData()
+                initData()
 
             startTime = datetime.datetime.now()
 
@@ -175,13 +175,13 @@ def checkForLostPackets(seq, lastSeq, previousPacketReceived, latestPacketReceiv
             print packetsLost, "packets were lost between", lastSeq, "and", seq
         # TODO: pass a message to front-end to notify about lost packets; need specifications
         obj = { 
-	    'From'      : previousPacketReceived,
-	    'To'  	: latestPacketReceived,
-   	    'PacketLost': packetLost
-	    }
+            'From'      : previousPacketReceived,
+            'To'  	: latestPacketReceived,
+            'PacketLost': packetLost
+        }
     return obj
 
-	
+
 
 def initData():
     processData.packetAnalyze = initPacketAnalyze()
@@ -196,7 +196,7 @@ def initData():
         processData.ADISMess['Magnetometer'+i] =0
 
 def processData(fieldID, timestamp, length, data):
-   
+
 
     # handle error message
     if fieldID == 'ERRO':
@@ -246,7 +246,7 @@ def initPacketAnalyze():
     obj = {
         'fieldID': 'Analyze',
         'PacketReceived': 0,
-	'latestPacketReceived': datetime.datetime.now(),
+        'latestPacketReceived': datetime.datetime.now(),
         'PacketLost':[],
     }
     return obj
