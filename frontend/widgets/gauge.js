@@ -1,5 +1,5 @@
 function Gauge(_config) {
-    $('.container').append("<div class=\"widget " + config.id + "\" id=\"widget " + config.id + "\"></div>");
+    $('.container').append("<div class=\"widget " + _config.id + "\" id=\"widget " + _config.id + "\"></div>");
 
     var self = this;
 

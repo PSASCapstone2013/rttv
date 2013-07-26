@@ -11,7 +11,7 @@ function Path(svg, data, generatorName, generatorFunction) {
     // redraw the path
     this.draw = function(translate) {
         path.attr("d", generatorFunction)
-         .attr("transform", null)
+         .attr("transform", "translate(0)")
          .transition()
          .attr("transform", "translate(" + translate + ")");
     };
