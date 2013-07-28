@@ -77,16 +77,20 @@
       lockWidget.setText('Rocket is <ohno>not locked</ohno>.');
     };
     
+    gps = document.getElementById('widget gps');
+    
     connection.onmessage = function (message) {
       // try to decode json (this script assumes that each message from the server is json)
       try {
         var json = JSON.parse(message.data);
         var newTime = new Date().getTime();
         
-        widgets.forEach(function(widget) {
-          widget.putJSON(json);
-          widget.draw();
-        });
+        if (json.fieldID != undefined) { // the version of the server i'm using is sending mostly empty json
+          widgets.forEach(function(widget) {
+            widget.putJSON(json);
+            widget.draw();
+          });
+        }
 
         oldTime = newTime;
         

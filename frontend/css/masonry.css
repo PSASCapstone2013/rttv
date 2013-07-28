@@ -14,11 +14,15 @@ body {
   width: 200px;
   height: 150px;
 }
+.widget.status {
+  width: 200px;
+  height: 150px;
+}
 .widget.gps {
   width: 250px;
   height: 150px;
 }
-.widget.acc {
+.widget.acceleration {
   width: 250px;
   height: 150px;
 }

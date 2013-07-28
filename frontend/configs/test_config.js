@@ -60,7 +60,7 @@ var configs = [
     ]
   },
   {
-    id: 'Acceleration',
+    id: 'acceleration',
     type: 'Text',
     controls: [
       {

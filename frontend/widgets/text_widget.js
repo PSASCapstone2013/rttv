@@ -5,13 +5,13 @@ function TextWidget(_config) {
         config = _config,
         value_labels = {},
         divElement = document.getElementById('widget ' + config.id);
-
+    
     if (config.controls) {
         config.controls.forEach(function(control) {
-            value_labels[control.label] = "";
+            value_labels[control.label] = " ";
         });
     }
-
+    
     // TODO currently duplicated across all widgets... I want inheritence dammit!
     this.putJSON = function(jsonObject) {
         config.controls.forEach(function(control) {
@@ -25,26 +25,35 @@ function TextWidget(_config) {
             }
         });
     };
-
+    
     this.put = function(controlLabel, value) {
         if (value_labels[controlLabel]) {
-            value_labels[controlLabel] = value.toFixed(2);
+        	if (isFloat(value)) {
+              value_labels[controlLabel] = value.toFixed(2);
+          }
+          else {
+          	value_labels[controlLabel] = value.toFixed(0);
+          }
         }
-        newText = '<strong>' + config.id + '</strong>';
-        value_labels.forEach(function(value_label) {
-            newText += "<br>";
-            newText += value_label + ': ';
-            newText += value_labels[value_label];
+        newText = '<strong>' + config.id.toUpperCase() + '</strong>';
+        jQuery.each(value_labels, function(label, value) {
+        	  newText += "<br>";
+            newText += label + ': ';
+            newText += value;
         });
         this.setText(newText);
     };
-
+    
     this.setText = function(_text) {
         text = _text;
         divElement.innerHTML = text;
     };
-
+    
     this.draw = function() {
-
+    
     };
+    
+    function isFloat(n) {
+      return typeof n === 'number' && n % 1 != 0;
+    }
 }
