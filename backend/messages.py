@@ -111,6 +111,7 @@ def jsonROLL(fieldID, timestamp, parsedData):
         'finPosition': parsedData[0], # servo PWM in microseconds
         'rollServoDisable': parsedData[1], # boolean
     }
+    return obj
     
 def magnitude(x, y, z):
     return (x ** 2 + y ** 2 + z ** 2) ** 0.5
