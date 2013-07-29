@@ -11,7 +11,7 @@
     <script src="scripts/masonry.pkgd.min.js"></script>
     <script src="scripts/d3.v2.js"></script>
     <script src="scripts/d3_func.js"></script>
-    <script src="configs/test_config.js"></script>
+    <script src="scripts/js-yaml.min.js"></script>
     <script src="widgets/gauge.js"></script>
     <script src="widgets/line_graph.js"></script>
     <script src="widgets/text_widget.js"></script>
@@ -24,9 +24,16 @@
 </html>
 
 <script>
-
+  // Load the yaml config file
+  var fileIn = LoadFile('configs/test_config.yml');
+  /* Right now it will only work on firefox, at least my version, since we're directly accessing the file.
+     You can open in chrome with the switch "--allow-file-access-from-files" as well.
+     It'll need updated to something like this once the webserver is set up:
+     var fileIn = LoadFile('http://webserver/frontend/configs/test_config.yml'); */
+  var configs = jsyaml.load(fileIn);
+  
   var lockWidget = new TextWidget({id: 'lock'});
-
+  
   var makeWidget = function(config) {
     switch(config.type) {
       case 'LineGraph':
@@ -39,15 +46,23 @@
       return null;
     }
   }
-
+  
   widgets = [];
-  configs.forEach(function(config) {
-    var widget = makeWidget(config);
+  for (var i = 0; i < configs.length; i++) {
+    var widget = makeWidget(configs[i]);
     if (widget != null) {
       widgets.push(widget);
     }
-  });
-
+  };
+  
+  function LoadFile(pathOfFileToRead){
+    var request = new XMLHttpRequest();
+    request.open("GET", pathOfFileToRead, false);
+    request.send(null);
+    var contentsOfFileAsString = request.responseText;
+  
+    return contentsOfFileAsString;
+  }
 </script>
 
 <script>
