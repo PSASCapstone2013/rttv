@@ -38,10 +38,12 @@ def initData():
         processData.ADISMess['Magnetometer'+i] =0
 
 def processData(fieldID, timestamp, length, data):
-
-    # handle error message
-    if fieldID == 'ERRO':
+    if fieldID == 'ERRO': # data contains a string message
         return jsonERRO(fieldID, timestamp, data)
+    if fieldID == 'MESG': # data contains a string message
+        if DEBUG:
+            print "MESG:\"" + data + "\""
+        return jsonMESG(fieldID, timestamp, data)
 
     # parse data
     format = messageType.get(fieldID)
@@ -81,8 +83,11 @@ def processData(fieldID, timestamp, length, data):
 
     elif fieldID == 'MPL3':
         processData.lastMPL3Mess = jsonMPL3(fieldID, timestamp, parsedData)
-
-
+    
+    elif fieldID == 'ROLL':
+        # TODO: Dang, add averaging code here (Bogdan).
+        # something = jsonROLL(fieldID, timestamp, parsedData)
+        pass
 
 def initPacketAnalyze():
     obj = {

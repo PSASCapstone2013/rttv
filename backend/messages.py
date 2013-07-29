@@ -88,13 +88,29 @@ def jsonMPL3(fieldID, timestamp, parsedData):
     return obj
 
 def jsonERRO(fieldID, timestamp, data):
-    # TODO: data format needs to be specified
+    # This message type has never been used
     obj = {
         'fieldID': fieldID,
         'timestamp': timestamp,
         'message': data,
     }
     return obj
+    
+def jsonMESG(fieldID, timestamp, data):
+    obj = {
+        'fieldID': fieldID,
+        'timestamp': timestamp,
+        'message': data, # string
+    }
+    return obj
+    
+def jsonROLL(fieldID, timestamp, parsedData):
+    obj = {
+        'fieldID': fieldID,
+        'timestamp': timestamp,
+        'finPosition': parsedData[0], # servo PWM in microseconds
+        'rollServoDisable': parsedData[1], # boolean
+    }
     
 def magnitude(x, y, z):
     return (x ** 2 + y ** 2 + z ** 2) ** 0.5
