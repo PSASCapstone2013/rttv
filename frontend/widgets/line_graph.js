@@ -1,7 +1,8 @@
 function LineGraph(config) {
     $('.container').append("<div class=\"widget " + config.id + "\" id=\"widget " + config.id + "\"></div>");
 
-    var dataCount = 0, // keep track of the number of data points we receive
+    var self = this,
+        dataCount = 0, // keep track of the number of data points we receive
                        // when we reach maxDataSize, we stop scaling x-axis and start scrolling
         data = zeros(0),
         id = config.id || 'LineGraph',
@@ -12,10 +13,9 @@ function LineGraph(config) {
         xDomain = [0, 0],
         yDomain = [Number.MAX_VALUE, Number.MIN_VALUE],
 
-        width = config.width, height = config.height,
         maxDataSize = config.maxDataSize || 100,
-        mapX = d3.scale.linear().domain(xDomain).range([0, width]),
-        mapY = d3.scale.linear().domain([0, 0]).range([height, 0]),
+        mapX = d3.scale.linear().domain(xDomain).range([0, config.width]),
+        mapY = d3.scale.linear().domain([0, 0]).range([config.height, 0]),
 
         xAxis = d3.svg.axis().scale(mapX).orient("bottom"),
         yAxis = d3.svg.axis().scale(mapY).orient("left"),
@@ -26,12 +26,12 @@ function LineGraph(config) {
 
         area = d3.svg.area()
         .x(function(d, i) { return mapX(xDomain[1] - i); })
-        .y0(height)
+        .y0(config.height)
         .y1(function(d) { return mapY(d); }),
 
         svg = d3.select(".widget." + id).append("svg")
-            .attr("width", width + labelMargin.left + labelMargin.right)
-            .attr("height", height + labelMargin.top + labelMargin.bottom)
+            .attr("width", config.width + labelMargin.left + labelMargin.right)
+            .attr("height", config.height + labelMargin.top + labelMargin.bottom)
             .style("background-color", "white")
             .append("g")
             .attr("transform", "translate(" + labelMargin.left + "," + labelMargin.top + ")"),
@@ -41,12 +41,12 @@ function LineGraph(config) {
     svg.append("defs").append("clipPath")
         .attr("id", "clip")
         .append("rect")
-        .attr("width", width)
-        .attr("height", height);
+        .attr("width", config.width)
+        .attr("height", config.height);
 
     svg.append("g")
         .attr("class", "x axis")
-        .attr("transform", "translate(0," + height + ")")
+        .attr("transform", "translate(0," + config.height + ")")
         .call(xAxis);
 
     svg.append("g")
@@ -56,7 +56,7 @@ function LineGraph(config) {
     svg.append("text")
         .attr("transform", "rotate(-90)")
         .attr("y", -labelMargin.left)
-        .attr("x", -height / 2)
+        .attr("x", -config.height / 2)
         .attr("dy", "1em")
         .style("text-anchor", "middle")
         .text(yAxisLabel);

@@ -77,8 +77,6 @@
       lockWidget.setText('Rocket is <ohno>not locked</ohno>.');
     };
     
-    gps = document.getElementById('widget gps');
-    
     connection.onmessage = function (message) {
       // try to decode json (this script assumes that each message from the server is json)
       try {
