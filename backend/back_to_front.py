@@ -3,6 +3,7 @@ import thread
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
+import json
 
 openWebSockets = [] #an array of open websocket connections
 openWebSocketsLock = thread.allocate_lock() #lock used when accessing the thread running the Tornado code
@@ -46,3 +47,6 @@ def sendJsonObj(jsonObj):
                                                                                                     #and http://www.tornadoweb.org/en/stable/websocket.html?highlight=websockets#output
                                                                                                     #and http://docs.python.org/2/library/json.html#basic-usage
                                                                                                     #for more detailed info
+    openWebSocketsLock.release()
+    
+    
