@@ -50,8 +50,8 @@ def checkForLostPackets(seq, lastSeq, previousPacketReceived, latestPacketReceiv
             print packetsLost, "packets were lost between", lastSeq, "and", seq
         # TODO: pass a message to front-end to notify about lost packets; need specifications
         obj = { 
-            'From'      : previousPacketReceived,
-            'To'  	: latestPacketReceived,
+            'From'      : previousPacketReceived.strftime('%H%M%S%f'),
+            'To'  	: latestPacketReceived.strftime('%H%M%S%f'),
             'PacketLost': packetsLost
         }
     return obj

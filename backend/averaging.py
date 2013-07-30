@@ -12,8 +12,8 @@ def noPacketReceived():
 
 
 def checkBeforeSend(jsonObj, fieldID):
-    if (fieldID == 'ADIS'):
-
+    if (fieldID == 'ADIS') :
+           
         for i in ['X', 'Y', 'Z']:
             jsonObj['Gyroscope'+i] = (jsonObj['Gyroscope'+i]  ) / processData.ADISCount    
             jsonObj['Accelerometer'+i] = (jsonObj['Accelerometer'+i]  ) / processData.ADISCount    
@@ -23,6 +23,8 @@ def checkBeforeSend(jsonObj, fieldID):
         jsonObj['AccelerometerMagn'] = magnitude(jsonObj['AccelerometerX'], jsonObj['AccelerometerY'], jsonObj['AccelerometerZ'])
         jsonObj['MagnetometerMagn'] = magnitude(jsonObj['MagnetometerX'], jsonObj['MagnetometerY'], jsonObj['MagnetometerZ'])
         initData()
+    if (fieldID == 'Analyze'):
+        jsonObj['latestPacketReceived'] = jsonObj['latestPacketReceived'].strftime('%H%M%S%f')
     return jsonObj
 
 def initData():
@@ -48,8 +50,8 @@ def processData(fieldID, timestamp, length, data):
     # parse data
     format = messageType.get(fieldID)
     if format == None or len(data) <> format.size: # validate data format
-        if(fieldID == 'ADIS'): # This ADIS is truncted by the fragmented packet. Not my fault!
-            return None # quitely skip it
+       # if(fieldID == 'ADIS'): # This ADIS is truncted by the fragmented packet. Not my fault!
+        #    return None # quitely skip it
         if DEBUG:
             print "  warning: unable to parse message of type", fieldID
             # print "    unknown format:", format == None

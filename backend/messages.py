@@ -89,6 +89,7 @@ def jsonMPL3(fieldID, timestamp, parsedData):
 
 def jsonERRO(fieldID, timestamp, data):
     # This message type has never been used
+    print "we are here"
     obj = {
         'fieldID': fieldID,
         'timestamp': timestamp,

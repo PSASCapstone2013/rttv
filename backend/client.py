@@ -39,21 +39,21 @@ def receivePackets():
             # ==============================================
             # TODO: We need to move this part of code to a separate function when the bugs are fixed
             jsonObj = processData(fieldID, timestamp, length, data)
-            # This code is commented out because sendJsonObj() makes client.py to hang up
-            ''' 
+            
             endTime = datetime.datetime.now()
             if ( (endTime - startTime).microseconds > timeRate):
                 if(noPacketReceived()):
                     sendJsonObj(jsonERRO('ERRO',0,"no packet revceived"))
                     print "No packet received"
                 else:
+                
                     sendJsonObj(checkBeforeSend(processData.ADISMess, fieldID))
                     sendJsonObj(processData.lastGPSMess)
                     sendJsonObj(processData.lastMPL3Mess)
                     sendJsonObj(processData.lastMPU9Mess)
-                sendJsonObj(processData.packetAnalyze)
+                sendJsonObj(checkBeforeSend(processData.packetAnalyze, 'Analyze'))
                 initData()
-            '''
+            
             # ==============================================
             
             startTime = datetime.datetime.now()            

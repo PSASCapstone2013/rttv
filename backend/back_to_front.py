@@ -38,9 +38,12 @@ def sendJsonObj(jsonObj):
     # objDecoded = json.loads(jsonObj)
     # print objDecoded['fieldID'], objDecoded['timestamp']
     openWebSocketsLock.acquire() 
+    
     for webSocket in openWebSockets: #iterates through every open connections in the array
         if webSocket is None: #if the connection is null
             print "It is none"
+        
+        
         tornado.ioloop.IOLoop.instance().add_callback(webSocket.write_message, json.dumps(jsonObj)) #creates a write event that will run during the next iteration
                                                                                                     #of the Tornado io loop. The event will send the json object
                                                                                                     #to the front end. See http://www.tornadoweb.org/en/stable/ioloop.html#callbacks-and-timeouts
