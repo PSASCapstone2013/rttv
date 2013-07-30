@@ -10,7 +10,7 @@ messageType = {
     'GPS\x01':  struct.Struct("<BBH 3d 5f HH"), # GPS BIN1
     # more details about GPS format here:
     # http://www.hemispheregps.com/gpsreference/Bin1.htm
-    'ADIS':     struct.Struct(">12H"),          # ADIS16405 IMU
+    'ADIS':     struct.Struct(">12h"),          # ADIS16405 IMU
     'MPU9':     struct.Struct(">7H"),           # MPU9150 IMU
     'MPL3':     struct.Struct(">2L"),           # MPL3115A2 Pressure Sensor
     'ROLL':     struct.Struct("<HB")            # ROLL computer data
