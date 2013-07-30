@@ -18,7 +18,6 @@ def receivePacket(sock):
             print "Timeout:", TIMEOUT, "seconds."
             print "Solution 1: check whether the server is running"
             print "Solution 2: check whether you are using the right port number"
-        # TODO: Let front-end know about timeout if needed
         return ''
 
 def checkSequenceNumber(message, lastSeq):

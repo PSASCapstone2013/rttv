@@ -15,12 +15,12 @@ def receivePackets():
     sock = initSocket()
     initData()
     lastSeq = sys.maxint
-    startTime = datetime.datetime.now()
 
     # listen socket
     while True:
         message = receivePacket(sock)
-        if message == '':
+        if message == '': # timeout - no packets received during TIMEOUT
+            # sendDataToFrontEnd('') # not sure how to make this one to work here
             continue # get the next packet
         debug.printChar('.') # packet received successfully --> print a dot
         seq, lastSeq = checkSequenceNumber(message, lastSeq)
@@ -35,29 +35,25 @@ def receivePackets():
                 break # skip this message and read the next packet
             data = message[HEADER_LENGTH:length+HEADER_LENGTH] # data bytes
             debug.messageHeader(fieldID, length, timestamp) # print debug message
-
-            # ==============================================
-            # TODO: We need to move this part of code to a separate function when the bugs are fixed
             jsonObj = processData(fieldID, timestamp, length, data)
-            
-            endTime = datetime.datetime.now()
-            if ( (endTime - startTime).microseconds > timeRate):
-                if(noPacketReceived()):
-                    sendJsonObj(jsonERRO('ERRO',0,"no packet revceived"))
-                    print "No packet received"
-                else:
-                
-                    sendJsonObj(checkBeforeSend(processData.ADISMess, fieldID))
-                    sendJsonObj(processData.lastGPSMess)
-                    sendJsonObj(processData.lastMPL3Mess)
-                    sendJsonObj(processData.lastMPU9Mess)
-                sendJsonObj(checkBeforeSend(processData.packetAnalyze, 'Analyze'))
-                initData()
-            
-            # ==============================================
-            
-            startTime = datetime.datetime.now()            
+            sendDataToFrontEnd(fieldID)
             message = message [HEADER_LENGTH+length:] # select the next message 
-            
+
+def sendDataToFrontEnd(fieldID):
+    endTime = datetime.datetime.now()
+    if ((endTime - sendDataToFrontEnd.startTime).microseconds > TIME_RATE):
+        if(noPacketReceived()):
+            sendJsonObj(jsonERRO('ERRO',0,"no packet revceived"))
+            print "No packet received"
+        else:
+            sendJsonObj(checkBeforeSend(processData.ADISMess, fieldID))
+            sendJsonObj(processData.lastGPSMess)
+            sendJsonObj(processData.lastMPL3Mess)
+            sendJsonObj(processData.lastMPU9Mess)
+        sendJsonObj(checkBeforeSend(processData.packetAnalyze, 'Analyze'))
+        initData()
+    sendDataToFrontEnd.startTime = datetime.datetime.now()            
+sendDataToFrontEnd.startTime = datetime.datetime.now() #executed at program initialization
+
 if __name__ == "__main__":
     main()
