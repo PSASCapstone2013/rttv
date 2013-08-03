@@ -83,7 +83,7 @@
     
     connection.onopen = function () {
       connection.send('Client Connected');
-      lockWidget.setText('connection is open');
+      lockWidget.setText('Connection is Open');
     };
     connection.onerror = function (error) {
       lockWidget.setText('Rocket is <ohno>not locked</ohno>.');

@@ -1,13 +1,20 @@
 ---
+# Adding the suffix .Max or .Min to any JSON source will give you the maximum or minimum value over time.
+
   - id: status
     type: Text
+    width: 200
+    height: 150
     controls:
       - label: NavMode
         source: "GPS\x01.NavMode"
       - label: Satellites
         source: "GPS\x01.NumOfSats"
+        
   - id: gps
     type: Text
+    width: 200
+    height: 150
     controls:
       - label: Lat
         source: "GPS\x01.Latitude"
@@ -15,8 +22,13 @@
         source: "GPS\x01.Longitude"
       - label: Height
         source: "GPS\x01.Height"
+      - label: Max Height
+        source: "GPS\x01.Height.Max"
+        
   - id: acceleration
     type: Text
+    width: 200
+    height: 150
     controls:
       - label: X
         source: ADIS.AccelerometerX
@@ -26,6 +38,7 @@
         source: ADIS.AccelerometerZ
       - label: Magnitude
         source: ADIS.AccelerometerMagn
+        
   - id: baz
     type: LineGraph
     width: 600
@@ -34,6 +47,7 @@
     controls:
       - label: Z Roll
         source: ADIS.GyroscopeX
+        
   - id: altitude
     type: Gauge
     label: Altitude
