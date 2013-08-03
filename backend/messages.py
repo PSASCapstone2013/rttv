@@ -42,27 +42,30 @@ def json_ADIS(message_id, timestamp, data):
     obj = {
         'fieldID': message_id,
         'timestamp': timestamp,
-        'PowerSupply': data[0],
-        'GyroscopeX': data[1],
-        'GyroscopeY': data[2],
-        'GyroscopeZ': data[3],
-        # 'gyroscope_magn': magnitude(data[1], data[2], data[3]),
-
-        'AccelerometerX': data[4],
-        'AccelerometerY': data[5],
-        'AccelerometerZ': data[6],
-        # 'accelerometer_magn': magnitude(data[4], data[5], data[6]),
-
-        'MagnetometerX': data[7],
-        'MagnetometerY': data[8],
-        'MagnetometerZ': data[9],
-        # 'MagnetometerMagn': magnitude(data[7], data[8], data[9]),
-
-        'Temperature': data[10],
-        'AuxiliaryADC': data[11]
+        'PowerSupply': float(data[0]) / json_ADIS.POWER_SUPPLY,
+        'GyroscopeX': data[1] / json_ADIS.RATE_GYRO,
+        'GyroscopeY': data[2] / json_ADIS.RATE_GYRO,
+        'GyroscopeZ': data[3] / json_ADIS.RATE_GYRO,
+        'AccelerometerX': data[4] / json_ADIS.ACCELEROMETER,
+        'AccelerometerY': data[5] / json_ADIS.ACCELEROMETER,
+        'AccelerometerZ': data[6] / json_ADIS.ACCELEROMETER,
+        'MagnetometerX': data[7] / json_ADIS.MAGNETOMETER,
+        'MagnetometerY': data[8] / json_ADIS.MAGNETOMETER,
+        'MagnetometerZ': data[9] / json_ADIS.MAGNETOMETER,
+        'Temperature': data[10] / json_ADIS.TEMPERATURE,
+        'AuxiliaryADC': data[11] / json_ADIS.AUX_ADC,
     }
     return obj
-
+    
+# ADIS fixed to float unit conversion coefficients
+json_ADIS.POWER_SUPPLY = float(2.418)  # milli Volts        (mV)
+json_ADIS.RATE_GYRO = float(0.05)      # degrees per second (deg/sec)
+json_ADIS.ACCELEROMETER = float(3.33)  # milli grams        (mg)
+json_ADIS.MAGNETOMETER = float(0.5)    # milli gauss        (mgauss)
+json_ADIS.TEMPERATURE = float(0.14)    # degrees in Celsius (deg C)
+json_ADIS.AUX_ADC = float(806)         # micro Volts        (mu V)
+    
+    
 def json_MPU9(message_id, timestamp, data):
     # This one has not been used
     obj = {

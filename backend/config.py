@@ -2,15 +2,19 @@ import datetime
 import socket
 import sys
 
-# Globals
+# global constants
 IP_ADDRESS = ""        # dafault IP
 PORT = 35001           # new port used in PSAS server-client example
 #PORT = 36000          # old port used in PSAS server-client example
 PACKET_SIZE = 4096     # maximum packet size to receive
 TIMEOUT = 0.1          # time in seconds to wait for a packet
 TIME_RATE = 100000     # the rate of transmitting message to the client's browser 
-BAD_DEBUG_ONLY = True  # Show only debug information for bad cases
+
+# debugging
+BAD_DEBUG_ONLY = False  # Show only debug information for bad cases
 DEBUG = (sys.argv[1:] == ['-d'])
+PRINT_CHAR_FOR_ARRIVING_PACKETS = True
+PRINT_CHAR_FOR_BACK_TO_FRONT_UPDATE = True
 
 # packet header
 SEQUENCE_LENGTH = 4    # packet sequence field length in bytes
@@ -24,7 +28,7 @@ FIELD_ID_OFFSET = 0
 TIMESTAMP_OFFSET = FIELD_ID_OFFSET + FIELD_ID_LENGTH
 DATA_LENGTH_OFFSET = TIMESTAMP_OFFSET + TIMESTAMP_LENGTH
 DATA_OFFSET = DATA_LENGTH_OFFSET + DATA_LENGTH_LENGTH
-    
+
 # log filename format
 LOG_FILE_FORMAT = datetime.datetime.now().strftime("log_%Y.%m.%d_%H-%M-%S")
 

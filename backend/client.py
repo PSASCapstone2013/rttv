@@ -1,12 +1,13 @@
 # modularization part
 from config import *
-from parsing import *
 from averaging import *
+from parsing import *
 from back_to_front import *
 
 # to be modularized
 
 def main():
+    debug.open_logs()
     thread.start_new_thread(tornado_thread, (0,0))
     receive_packets()
     
@@ -22,7 +23,8 @@ def receive_packets():
         if message == '': # timeout - no packets received during TIMEOUT
             # send_data_to_front_end('') # not sure how to make it working here
             continue # get the next packet
-        debug.print_char('.') # packet received successfully --> print a dot
+        if PRINT_CHAR_FOR_ARRIVING_PACKETS:
+            debug.print_char('.') # packet received successfully --> print a dot
         seq, last_seq = check_sequence_number(message, last_seq)
         dump_packet_to_log_file(log_file, message, seq)
         
@@ -34,7 +36,7 @@ def receive_packets():
             if data_is_truncated(message, length):
                 break # skip this message and read the next packet
             data = message[HEADER_LENGTH:length + HEADER_LENGTH] # data bytes
-            debug.message_header(message_id, length, timestamp) # debug message
+            # debug.message_header(message_id, length, timestamp) # debug message
             json_obj = parse_data(message_id, timestamp, length, data)
             send_data_to_front_end(message_id)
             message = message [HEADER_LENGTH + length:] # go to next message 
@@ -48,6 +50,8 @@ def dump_packet_to_log_file(logFile, message, seq):
 def send_data_to_front_end(message_id):
     endTime = datetime.datetime.now()
     if ((endTime - send_data_to_front_end.startTime).microseconds > TIME_RATE):
+        if PRINT_CHAR_FOR_BACK_TO_FRONT_UPDATE:
+            debug.print_char('>') # sending JSON data to front-end
         if (no_packet_received()):
             send_json_obj(json_ERRO('ERRO', 0, "no packet revceived"))
             print "No packet received"
