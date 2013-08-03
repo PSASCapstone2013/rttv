@@ -2,7 +2,7 @@ from config import *
 
 def message_header(message_id, length, timestamp):
     if DEBUG and not BAD_DEBUG_ONLY:
-        print "  %s %2d %.3f" % (message_id, length, float(timestamp)/1e9),
+        print "  %s %2d %.3f" % (message_id, length, float(timestamp) / 1e9),
         
 def print_char(char):
     if not (DEBUG and BAD_DEBUG_ONLY):
