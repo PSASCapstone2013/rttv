@@ -109,7 +109,22 @@ def parse_data(message_id, timestamp, length, data):
             jsonMPL3(message_id, timestamp, parsed_data)
     
     elif message_id == 'ROLL':
-        # TODO: Dang, add averaging code here (Bogdan).
-        # something = jsonROLL(message_id, timestamp, parsed_data)
-        pass
-        
+        json_obj = jsonROLL(message_id, timestamp, parsed_data)
+        json_obj['finPosition'] = json_obj['finPosition'] + parse_data.last_ROLL_mess['finPosition']
+	if (json_obj['rollServoDisable']):
+            parse_data.ROLL_true = parse_data.ROLL_true + 1
+        else:
+            parse_data.ROLL_false = parse_data.ROLL_false + 1
+        parse_data.ROLL_count = parse_data.ROLL_count + 1
+        parse_data.last_ROLL_mess = json_obj
+
+
+
+
+
+
+
+
+
+
+

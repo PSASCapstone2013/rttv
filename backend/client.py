@@ -21,7 +21,7 @@ def receive_packets():
     while True:
         message = receive_packet(sock)
         if message == '': # timeout - no packets received during TIMEOUT
-            # send_data_to_front_end('') # not sure how to make it working here
+            send_data_to_front_end('') # not sure how to make it working here
             continue # get the next packet
         if PRINT_CHAR_FOR_ARRIVING_PACKETS:
             debug.print_char('.') # packet received successfully --> print a dot
@@ -52,17 +52,20 @@ def send_data_to_front_end(message_id):
     if ((endTime - send_data_to_front_end.startTime).microseconds > TIME_RATE):
         if PRINT_CHAR_FOR_BACK_TO_FRONT_UPDATE:
             debug.print_char('>') # sending JSON data to front-end
+	
         if (no_packet_received()):
             send_json_obj(json_ERRO('ERRO', 0, "no packet revceived"))
             print "No packet received"
         else:
-            send_json_obj(check_before_send(parse_data.ADIS_mess, message_id))
+            send_json_obj(check_before_send(parse_data.ADIS_mess, 'ADIS'))
             send_json_obj(parse_data.last_GPS_mess)
             send_json_obj(parse_data.last_MPL3_mess)
             send_json_obj(parse_data.last_MPU9_mess)
+            send_json_obj(check_before_send(parse_data.last_ROLL_mess, 'ROLL'))
         send_json_obj(check_before_send(parse_data.packet_analyze, 'Analyze'))
         init_data()
     send_data_to_front_end.startTime = datetime.datetime.now()            
+
 send_data_to_front_end.startTime = datetime.datetime.now() # do at program init
 
 if __name__ == "__main__":
