@@ -5,7 +5,7 @@ from config import *
 
 delimiter = struct.Struct('!4sLH')              # 4 char, 2 short uint, 4 long uint, 2 short uint
 
-messageType = {
+message_type = {
     'SEQN':     delimiter,                      # packet log separator
     'GPS\x01':  struct.Struct("<BBH 3d 5f HH"), # GPS BIN1
     # more details about GPS format here:
@@ -17,100 +17,100 @@ messageType = {
 }
 
 
-def jsonGPSbin1(fieldID, timestamp, parsedData):
+def json_GPS_bin1(message_id, timestamp, parsed_data):
     obj = {
-        'fieldID': fieldID,
+        'fieldID': message_id,
         'timestamp': timestamp,
-        'AgeOfDiff': parsedData[0],
-        'NumOfSats': parsedData[1],
-        'GPSWeek': parsedData[2],
-        'GPSTimeOfWeek': parsedData[3],
-        'Latitude': parsedData[4],
-        'Longitude': parsedData[5],
-        'Height': parsedData[6],
-        'VNorth': parsedData[7],
-        'VEast': parsedData[8],
-        'Vup': parsedData[9],
-        'StdDevResid': parsedData[10],
-        'NavMode': parsedData[11],
-        'ExtendedAgeOfDiff': parsedData[12]
+        'AgeOfDiff': parsed_data[0],
+        'NumOfSats': parsed_data[1],
+        'GPSWeek': parsed_data[2],
+        'GPSTimeOfWeek': parsed_data[3],
+        'Latitude': parsed_data[4],
+        'Longitude': parsed_data[5],
+        'Height': parsed_data[6],
+        'VNorth': parsed_data[7],
+        'VEast': parsed_data[8],
+        'Vup': parsed_data[9],
+        'StdDevResid': parsed_data[10],
+        'NavMode': parsed_data[11],
+        'ExtendedAgeOfDiff': parsed_data[12]
     }
     return obj
 
-def jsonADIS(fieldID, timestamp, parsedData):
+def json_ADIS(message_id, timestamp, parsed_data):
     obj = {
-        'fieldID': fieldID,
+        'fieldID': message_id,
         'timestamp': timestamp,
-        'PowerSupply': parsedData[0],
-        'GyroscopeX': parsedData[1],
-        'GyroscopeY': parsedData[2],
-        'GyroscopeZ': parsedData[3],
-        # 'GyroscopeMagn': magnitude(parsedData[1], parsedData[2], parsedData[3]),
+        'PowerSupply': parsed_data[0],
+        'GyroscopeX': parsed_data[1],
+        'GyroscopeY': parsed_data[2],
+        'GyroscopeZ': parsed_data[3],
+        # 'gyroscope_magn': magnitude(parsed_data[1], parsed_data[2], parsed_data[3]),
 
-        'AccelerometerX': parsedData[4],
-        'AccelerometerY': parsedData[5],
-        'AccelerometerZ': parsedData[6],
-        # 'AccelerometerMagn': magnitude(parsedData[4], parsedData[5], parsedData[6]),
+        'AccelerometerX': parsed_data[4],
+        'AccelerometerY': parsed_data[5],
+        'AccelerometerZ': parsed_data[6],
+        # 'accelerometer_magn': magnitude(parsed_data[4], parsed_data[5], parsed_data[6]),
 
-        'MagnetometerX': parsedData[7],
-        'MagnetometerY': parsedData[8],
-        'MagnetometerZ': parsedData[9],
-        # 'MagnetometerMagn': magnitude(parsedData[7], parsedData[8], parsedData[9]),
+        'MagnetometerX': parsed_data[7],
+        'MagnetometerY': parsed_data[8],
+        'MagnetometerZ': parsed_data[9],
+        # 'MagnetometerMagn': magnitude(parsed_data[7], parsed_data[8], parsed_data[9]),
 
-        'Temperature': parsedData[10],
-        'AuxiliaryADC': parsedData[11]
+        'Temperature': parsed_data[10],
+        'AuxiliaryADC': parsed_data[11]
     }
     return obj
 
-def jsonMPU9(fieldID, timestamp, parsedData):
-    # TODO: ask sponsots about field names
+def json_MPU9(message_id, timestamp, parsed_data):
+    # This one has not been used
     obj = {
-        'fieldID': fieldID,
+        'fieldID': message_id,
         'timestamp': timestamp,
-        'field0': parsedData[0],
-        'field1': parsedData[1],
-        'field2': parsedData[2],
-        'field3': parsedData[3],
-        'field4': parsedData[4],
-        'field5': parsedData[5],
-        'field6': parsedData[6],
+        'field0': parsed_data[0],
+        'field1': parsed_data[1],
+        'field2': parsed_data[2],
+        'field3': parsed_data[3],
+        'field4': parsed_data[4],
+        'field5': parsed_data[5],
+        'field6': parsed_data[6],
     }
     return obj
 
-def jsonMPL3(fieldID, timestamp, parsedData):
-    # TODO: ask sponsots about field names
+def jsonMPL3(message_id, timestamp, parsed_data):
+    # This one has not been used
     obj = {
-        'fieldID': fieldID,
+        'fieldID': message_id,
         'timestamp': timestamp,
-        'field0': parsedData[0],
-        'field1': parsedData[1],
+        'field0': parsed_data[0],
+        'field1': parsed_data[1],
     }
     return obj
 
-def jsonERRO(fieldID, timestamp, data):
-    # This message type has never been used
-    print "we are here"
+def json_ERRO(message_id, timestamp, data):
+    # This message type has never been passed from the flight computer
+    print "JSON ERRO message was generated."
     obj = {
-        'fieldID': fieldID,
+        'fieldID': message_id,
         'timestamp': timestamp,
         'message': data,
     }
     return obj
     
-def jsonMESG(fieldID, timestamp, data):
+def json_MESG(message_id, timestamp, data):
     obj = {
-        'fieldID': fieldID,
+        'fieldID': message_id,
         'timestamp': timestamp,
         'message': data, # string
     }
     return obj
     
-def jsonROLL(fieldID, timestamp, parsedData):
+def jsonROLL(message_id, timestamp, parsed_data):
     obj = {
-        'fieldID': fieldID,
+        'fieldID': message_id,
         'timestamp': timestamp,
-        'finPosition': parsedData[0], # servo PWM in microseconds
-        'rollServoDisable': parsedData[1], # boolean
+        'finPosition': parsed_data[0], # servo PWM in microseconds
+        'rollServoDisable': parsed_data[1], # boolean
     }
     return obj
     

@@ -5,93 +5,41 @@ import sys
 from messages import *
 from config import *
 
-def noPacketReceived():
-    if (( processData.ADISMess == {}) and ( processData.lastGPSMess == {}) and (processData.lastMPL3Mess == {}) and (processData.lastMPU9 == {})):
+def no_packet_received():
+    if ((parse_data.ADIS_mess == {}) and (parse_data.last_GPS_mess == {}) and (parse_data.last_MPL3_mess == {}) and (parse_data.last_MPU9 == {})):
         return True
     return False
 
 
-def checkBeforeSend(jsonObj, fieldID):
-    if (fieldID == 'ADIS') :
+def check_before_send(json_obj, message_id):
+    if (message_id == 'ADIS') :
            
         for i in ['X', 'Y', 'Z']:
-            jsonObj['Gyroscope'+i] = (jsonObj['Gyroscope'+i]  ) / processData.ADISCount    
-            jsonObj['Accelerometer'+i] = (jsonObj['Accelerometer'+i]  ) / processData.ADISCount    
-            jsonObj['Magnetometer'+i] = (jsonObj['Magnetometer'+i]  ) / processData.ADISCount	
+            json_obj['Gyroscope'+i] = (json_obj['Gyroscope'+i]  ) / parse_data.ADIS_count    
+            json_obj['Accelerometer'+i] = (json_obj['Accelerometer'+i]  ) / parse_data.ADIS_count    
+            json_obj['Magnetometer'+i] = (json_obj['Magnetometer'+i]  ) / parse_data.ADIS_count	
 
-        jsonObj['GyroscopeMagn'] = magnitude(jsonObj['GyroscopeX'], jsonObj['GyroscopeY'], jsonObj['GyroscopeZ'])
-        jsonObj['AccelerometerMagn'] = magnitude(jsonObj['AccelerometerX'], jsonObj['AccelerometerY'], jsonObj['AccelerometerZ'])
-        jsonObj['MagnetometerMagn'] = magnitude(jsonObj['MagnetometerX'], jsonObj['MagnetometerY'], jsonObj['MagnetometerZ'])
-        initData()
-    if (fieldID == 'Analyze'):
-        jsonObj['latestPacketReceived'] = jsonObj['latestPacketReceived'].strftime('%H%M%S%f')
-    return jsonObj
+        json_obj['GyroscopeMagn'] = magnitude(json_obj['GyroscopeX'], json_obj['GyroscopeY'], json_obj['GyroscopeZ'])
+        json_obj['AccelerometerMagn'] = magnitude(json_obj['AccelerometerX'], json_obj['AccelerometerY'], json_obj['AccelerometerZ'])
+        json_obj['MagnetometerMagn'] = magnitude(json_obj['MagnetometerX'], json_obj['MagnetometerY'], json_obj['MagnetometerZ'])
+        init_data()
+    if (message_id == 'Analyze'):
+        json_obj['latestPacketReceived'] = json_obj['latestPacketReceived'].strftime('%H%M%S%f')
+    return json_obj
 
-def initData():
-    processData.packetAnalyze = initPacketAnalyze()
-    processData.lastGPSMess = {}
-    processData.lastMPU9Mess = {}
-    processData.lastMPL3Mess = {}
-    processData.ADISCount = 0
-    processData.ADISMess = {}
+def init_data():
+    parse_data.packet_analyze = init_packet_analyze()
+    parse_data.last_GPS_mess = {}
+    parse_data.last_MPU9_mess = {}
+    parse_data.last_MPL3_mess = {}
+    parse_data.ADIS_count = 0
+    parse_data.ADIS_mess = {}
     for i in ['X', 'Y', 'Z', 'Magn']:        
-        processData.ADISMess['Gyroscope'+i] =  0
-        processData.ADISMess['Accelerometer'+i] = 0
-        processData.ADISMess['Magnetometer'+i] =0
+        parse_data.ADIS_mess['Gyroscope'+i] =  0
+        parse_data.ADIS_mess['Accelerometer'+i] = 0
+        parse_data.ADIS_mess['Magnetometer'+i] =0
 
-def processData(fieldID, timestamp, length, data):
-    if fieldID == 'ERRO': # data contains a string message
-        return jsonERRO(fieldID, timestamp, data)
-    if fieldID == 'MESG': # data contains a string message
-        if DEBUG:
-            print "MESG:\"" + data + "\""
-        return jsonMESG(fieldID, timestamp, data)
-
-    # parse data
-    format = messageType.get(fieldID)
-    if format == None or len(data) <> format.size: # validate data format
-       # if(fieldID == 'ADIS'): # This ADIS is truncted by the fragmented packet. Not my fault!
-        #    return None # quitely skip it
-        if DEBUG:
-            print "  warning: unable to parse message of type", fieldID
-            # print "    unknown format:", format == None
-            # print "    data length:", len(data)
-            # print "    format size:", format.size
-        return None # skip this message
-
-    parsedData = format.unpack(data) # tuple containing parsed data
-    if DEBUG and not BAD_DEBUG_ONLY:
-        print repr(parsedData)
-
-
-    if fieldID == 'SEQN':
-        return None # skip
-
-    elif fieldID == 'GPS\x01':
-        processData.lastGPSMess = jsonGPSbin1(fieldID, timestamp, parsedData)
-
-#get parsedData, then sum up 1000 messages before averaging them
-    elif fieldID == 'ADIS':
-        temp = jsonADIS(fieldID, timestamp, parsedData)
-        for i in ['X', 'Y', 'Z']:
-            processData.ADISMess['Gyroscope'+i] = (temp['Gyroscope'+i] + processData.ADISMess['Gyroscope'+i] )     
-            processData.ADISMess['Accelerometer'+i] = (temp['Accelerometer'+i] + processData.ADISMess['Accelerometer'+i] )     
-            processData.ADISMess['Magnetometer'+i] = (temp['Magnetometer'+i] + processData.ADISMess['Magnetometer'+i] ) 
-        processData.ADISCount = processData.ADISCount + 1
-        processData.ADISMess = temp
-
-    elif fieldID == 'MPU9':
-        processData.lastMPU9Mess = jsonMPU9(fieldID, timestamp, parsedData)
-
-    elif fieldID == 'MPL3':
-        processData.lastMPL3Mess = jsonMPL3(fieldID, timestamp, parsedData)
-    
-    elif fieldID == 'ROLL':
-        # TODO: Dang, add averaging code here (Bogdan).
-        # something = jsonROLL(fieldID, timestamp, parsedData)
-        pass
-
-def initPacketAnalyze():
+def init_packet_analyze():
     obj = {
         'fieldID': 'Analyze',
         'PacketReceived': 0,
@@ -99,3 +47,55 @@ def initPacketAnalyze():
         'PacketLost':[],
     }
     return obj
+    
+
+def parse_data(message_id, timestamp, length, data):
+    if message_id == 'ERRO': # data contains a string message
+        return json_ERRO(message_id, timestamp, data)
+    if message_id == 'MESG': # data contains a string message
+        if DEBUG:
+            print "MESG:\"" + data + "\""
+        return json_MESG(message_id, timestamp, data)
+
+    # parse data
+    format = message_type.get(message_id)
+    if format == None or len(data) <> format.size: # validate data format
+       # if(message_id == 'ADIS'): # This ADIS is truncted by the fragmented packet. Not my fault!
+        #    return None # quitely skip it
+        if DEBUG:
+            print "  warning: unable to parse message of type", message_id
+            # print "    unknown format:", format == None
+            # print "    data length:", len(data)
+            # print "    format size:", format.size
+        return None # skip this message
+
+    parsed_data = format.unpack(data) # tuple containing parsed data
+    if DEBUG and not BAD_DEBUG_ONLY:
+        print repr(parsed_data)
+
+    if message_id == 'SEQN':
+        return None # skip
+
+    elif message_id == 'GPS\x01':
+        parse_data.last_GPS_mess = json_GPS_bin1(message_id, timestamp, parsed_data)
+
+    elif message_id == 'ADIS':
+        temp = json_ADIS(message_id, timestamp, parsed_data)
+        for i in ['X', 'Y', 'Z']:
+            parse_data.ADIS_mess['Gyroscope'+i] = (temp['Gyroscope'+i] + parse_data.ADIS_mess['Gyroscope'+i] )     
+            parse_data.ADIS_mess['Accelerometer'+i] = (temp['Accelerometer'+i] + parse_data.ADIS_mess['Accelerometer'+i] )     
+            parse_data.ADIS_mess['Magnetometer'+i] = (temp['Magnetometer'+i] + parse_data.ADIS_mess['Magnetometer'+i] ) 
+        parse_data.ADIS_count = parse_data.ADIS_count + 1
+        parse_data.ADIS_mess = temp
+
+    elif message_id == 'MPU9':
+        parse_data.last_MPU9_mess = json_MPU9(message_id, timestamp, parsed_data)
+
+    elif message_id == 'MPL3':
+        parse_data.last_MPL3_mess = jsonMPL3(message_id, timestamp, parsed_data)
+    
+    elif message_id == 'ROLL':
+        # TODO: Dang, add averaging code here (Bogdan).
+        # something = jsonROLL(message_id, timestamp, parsed_data)
+        pass
+        
