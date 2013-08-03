@@ -11,24 +11,8 @@ body {
   background: #ffffff;
 }
 .widget.lock {
-  width: 200px;
+  width: 150px;
   height: 150px;
-}
-.widget.status {
-  width: 200px;
-  height: 150px;
-}
-.widget.gps {
-  width: 250px;
-  height: 150px;
-}
-.widget.acceleration {
-  width: 250px;
-  height: 150px;
-}
-.widget.zroll_graph {
-  width: 695px;
-  height: 350px;
 }
 
 ok{
