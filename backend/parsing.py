@@ -85,7 +85,8 @@ def parse_data(message_id, timestamp, length, data):
     elif message_id == 'ADIS':
         #debug.print_raw_data(data, 2) # 2 bytes per line
         json_obj = json_ADIS(message_id, timestamp, parsed_data)
-        debug.ADIS_conversion(data, parsed_data, json_obj)
+        if not debug.valid_ADIS(json_obj):
+            debug.ADIS_conversion(data, parsed_data, json_obj)
 
         # TODO: move this for-loop into a separate function
         for i in ['X', 'Y', 'Z']:

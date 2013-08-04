@@ -55,7 +55,7 @@ def send_data_to_front_end(message_id):
 	
         if (no_packet_received()):
             send_json_obj(json_ERRO('ERRO', 0, "no packet revceived"))
-            print "No packet received"
+            # print "No packet received"
         else:
             send_json_obj(check_before_send(parse_data.ADIS_mess, 'ADIS'))
             send_json_obj(parse_data.last_GPS_mess)

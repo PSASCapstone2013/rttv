@@ -11,7 +11,7 @@ message_type = {
     'GPS\x01':  struct.Struct("<BBH 3d 5f HH"), # GPS BIN1
         # more details about GPS format here:
         # http://www.hemispheregps.com/gpsreference/Bin1.htm
-    'ADIS':     struct.Struct(">12h"),          # ADIS16405 IMU
+    'ADIS':     struct.Struct("<12h"),          # ADIS16405 IMU
     'MPU9':     struct.Struct(">7H"),           # MPU9150 IMU
     'MPL3':     struct.Struct(">2L"),           # MPL3115A2 Pressure Sensor
     'ROLL':     struct.Struct("<HB")            # ROLL computer data
@@ -38,33 +38,37 @@ def json_GPS_bin1(message_id, timestamp, data):
     }
     return obj
 
+##################################################################### ADIS ####
 def json_ADIS(message_id, timestamp, data):
     obj = {
         'fieldID': message_id,
         'timestamp': timestamp,
-        'PowerSupply': float(data[0]) / json_ADIS.POWER_SUPPLY,
-        'GyroscopeX': data[1] / json_ADIS.RATE_GYRO,
-        'GyroscopeY': data[2] / json_ADIS.RATE_GYRO,
-        'GyroscopeZ': data[3] / json_ADIS.RATE_GYRO,
-        'AccelerometerX': data[4] / json_ADIS.ACCELEROMETER,
-        'AccelerometerY': data[5] / json_ADIS.ACCELEROMETER,
-        'AccelerometerZ': data[6] / json_ADIS.ACCELEROMETER,
-        'MagnetometerX': data[7] / json_ADIS.MAGNETOMETER,
-        'MagnetometerY': data[8] / json_ADIS.MAGNETOMETER,
-        'MagnetometerZ': data[9] / json_ADIS.MAGNETOMETER,
-        'Temperature': data[10] / json_ADIS.TEMPERATURE,
-        'AuxiliaryADC': data[11] / json_ADIS.AUX_ADC,
+        'PowerSupply': data[0] * json_ADIS.POWER_SUPPLY * MILLI,
+            # Range After Conversion: 4.75 V - 5.25 V
+            # multiplication makes no sense here; division does
+        'GyroscopeX': data[1] * json_ADIS.RATE_GYRO,
+        'GyroscopeY': data[2] * json_ADIS.RATE_GYRO,
+        'GyroscopeZ': data[3] * json_ADIS.RATE_GYRO,
+        'AccelerometerX': data[4] * json_ADIS.ACCELEROMETER * MILLI,
+        'AccelerometerY': data[5] * json_ADIS.ACCELEROMETER * MILLI,
+        'AccelerometerZ': data[6] * json_ADIS.ACCELEROMETER * MILLI,
+        'MagnetometerX': data[7] * json_ADIS.MAGNETOMETER * MILLI,
+        'MagnetometerY': data[8] * json_ADIS.MAGNETOMETER * MILLI, 
+        'MagnetometerZ': data[9] * json_ADIS.MAGNETOMETER * MILLI,
+        'Temperature': data[10] * json_ADIS.TEMPERATURE,
+        'AuxiliaryADC': data[11] * json_ADIS.AUX_ADC * MICRO,
     }
     return obj
     
 # ADIS fixed to float unit conversion coefficients
 json_ADIS.POWER_SUPPLY = float(2.418)  # milli Volts        (mV)
 json_ADIS.RATE_GYRO = float(0.05)      # degrees per second (deg/sec)
-json_ADIS.ACCELEROMETER = float(3.33)  # milli grams        (mg)
+json_ADIS.ACCELEROMETER = float(3.33)  # milli gee          (mG)
 json_ADIS.MAGNETOMETER = float(0.5)    # milli gauss        (mgauss)
 json_ADIS.TEMPERATURE = float(0.14)    # degrees in Celsius (deg C)
-json_ADIS.AUX_ADC = float(806)         # micro Volts        (mu V)
-    
+json_ADIS.AUX_ADC = float(806)         # micro Volts        (mu V)    
+
+##################################################################### MPU9 ####
     
 def json_MPU9(message_id, timestamp, data):
     # This one has not been used
@@ -93,7 +97,7 @@ def jsonMPL3(message_id, timestamp, data):
 
 def json_ERRO(message_id, timestamp, data):
     # This message type has never been passed from the flight computer
-    print "JSON ERRO message was generated."
+    # print "JSON ERRO message was generated."
     obj = {
         'fieldID': message_id,
         'timestamp': timestamp,

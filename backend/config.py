@@ -32,5 +32,11 @@ DATA_OFFSET = DATA_LENGTH_OFFSET + DATA_LENGTH_LENGTH
 # log filename format
 LOG_FILE_FORMAT = datetime.datetime.now().strftime("log_%Y.%m.%d_%H-%M-%S")
 
+# Unit Conversion
+MILLI = 0.001
+MICRO = 0.000001
+NANO  = 0.000000001
+G_FORCE = 9.80665 # meters per second squared
+
 # this line must be in the end of this file
 import debug 
