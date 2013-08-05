@@ -79,24 +79,22 @@
     // if user is running mozilla then use it's built-in WebSocket
     window.WebSocket = window.WebSocket || window.MozWebSocket;
     var connection = new WebSocket('ws://localhost:8080');
-    var oldTime = new Date().getTime();
     
     connection.onopen = function () {
       connection.send('Client Connected');
-      lockWidget.setText('Connection is Open');
+      lockWidget.setText('Connection is <ok>open</ok>');
     };
     connection.onerror = function (error) {
-      lockWidget.setText('Rocket is <ohno>not locked</ohno>.');
+      lockWidget.setText('Connection is <ohno>closed</ohno>.');
     };
     connection.onclose = function () {
-      lockWidget.setText('Rocket is <ohno>not locked</ohno>.');
+      lockWidget.setText('Connection is <ohno>closed</ohno>.');
     };
     
     connection.onmessage = function (message) {
       // try to decode json (this script assumes that each message from the server is json)
       try {
         var json = JSON.parse(message.data);
-        var newTime = new Date().getTime();
         
         if (json.fieldID != undefined) { // the version of the server i'm using is sending mostly empty json
           widgets.forEach(function(widget) {
@@ -104,8 +102,24 @@
             widget.draw();
           });
         }
-
-        oldTime = newTime;
+        
+        if (json.fieldID == 'Analyze'){
+        	var received = json.PacketReceived;
+        	var lostPercent = 0;
+        	if (received > 0) {
+        		var lost = json.PacketLost;
+        		var lostTotal = 0;
+        		for (i=0; i<lost.length; i++) {
+        			lostTotal += each[i].PacketsLost;
+        		}
+        		lostPercent = lostTotal / (received + lostTotal) * 100;
+        	}
+          var connection = 'Connection is <ok>open</ok>'
+            + '<br>Packets Received: ' + received
+            + '<br>Percent Loss: ' + lostPercent + '%'
+            + '<br>Last Packet Received: ' + json.latestPacketReceived;
+          lockWidget.setText(connection);
+        }
         
       } catch (e) {
         console.log('This doesn\'t look like a valid JSON: ', message.data);
