@@ -1,80 +1,77 @@
-function Gauge(_config) {
-    $('.container').append("<div class=\"widget " + _config.id + "\" id=\"widget " + _config.id + "\"></div>");
-
-    var self = this,
-        config = _config;
-
+function Gauge(config) {
+    Widget.call(this, config);
+    var self = this;
     self.value = 0;
 
-    config.labelTextConfig = {
-        size: Math.round(config.size / 9),
-        x: config.size / 2,
-        y: 3 * config.size / 10,
+    this.config.labelTextConfig = {
+        size: Math.round(this.config.size / 9),
+        x: this.config.size / 2,
+        y: 3 * this.config.size / 10,
         anchor: "middle"
     };
 
-    config.valueTextConfig = {
-        size: Math.round(config.size / 10),
-        x: config.size / 2,
-        y: 4 * config.size / 5,
+    this.config.valueTextConfig = {
+        size: Math.round(this.config.size / 10),
+        x: this.config.size / 2,
+        y: 4 * this.config.size / 5,
         anchor: "middle"
     };
 
-    config.id = config.id || "guage";
-    config.radius = config.size * 0.97 / 2;
+    this.config.id = this.config.id || "guage";
+    this.config.radius = this.config.size * 0.97 / 2;
 
-    config.min = config.min || 0;
-    config.max = config.max || 100;
-    config.range = config.max - config.min;
+    this.config.min = this.config.min || 0;
+    this.config.max = this.config.max || 100;
+    this.config.range = this.config.max - this.config.min;
 
-    config.majorTicks = config.majorTicks || 5;
-    config.minorTicks = config.minorTicks || 2;
+    this.config.majorTicks = this.config.majorTicks || 5;
+    this.config.minorTicks = this.config.minorTicks || 2;
 
-    config.greenColor  = "#109618";
-    config.yellowColor = "#FF9900";
-    config.redColor    = "#DC3912";
+    this.config.greenColor  = "#109618";
+    this.config.yellowColor = "#FF9900";
+    this.config.redColor    = "#DC3912";
 
-    svg = d3.select(".widget." + config.id).append("svg")
+    svg = d3.select(".widget." + this.config.id).append("svg")
         .attr("class", "gauge")
-        .attr("width", config.size)
-        .attr("height", config.size)
+        .attr("width", this.config.size)
+        .attr("height", this.config.size)
         .style("background-color", "white");
 
     this.render = function() {
         svg.append("circle")
-        .attr("cx", config.size / 2)
-        .attr("cy", config.size / 2)
-        .attr("r", config.radius)
+        .attr("cx", this.config.size / 2)
+        .attr("cy", this.config.size / 2)
+        .attr("r", this.config.radius)
         .style("fill", "#ccc")
         .style("stroke", "#000")
         .style("stroke-width", "0.5px");
 
         svg.append("circle")
-        .attr("cx", config.size / 2)
-        .attr("cy", config.size / 2)
-        .attr("r", 0.9 * config.radius)
+        .attr("cx", this.config.size / 2)
+        .attr("cy", this.config.size / 2)
+        .attr("r", 0.9 * this.config.radius)
         .style("fill", "#fff")
         .style("stroke", "#e0e0e0")
         .style("stroke-width", "2px");
 
 
-        //this.drawBand(config.greenZones[index].from, config.greenZones[index].to, config.greenColor);
+        //this.drawBand(this.config.greenZones[index].from, this.config.greenZones[index].to, this.config.greenColor);
 
-        var yellowFrom = (config.yellowPercent / 100.0) * config.max;
-        var yellowTo = (config.redPercent / 100.0) * config.max;
-        var redFrom = (config.redPercent / 100.0) * config.max;
-        var redTo = config.max;
+        var yellowFrom = (this.config.yellowPercent / 100.0) * this.config.max;
+        var yellowTo = (this.config.redPercent / 100.0) * this.config.max;
+        var redFrom = (this.config.redPercent / 100.0) * this.config.max;
+        var redTo = this.config.max;
 
-        self.drawBand(yellowFrom, yellowTo, config.yellowColor);
+        this.drawBand(yellowFrom, yellowTo, this.config.yellowColor);
 
-        self.drawBand(redFrom, redTo, config.redColor);
+        this.drawBand(redFrom, redTo, this.config.redColor);
 
-        self.appendText(svg, config.label, config.labelTextConfig);
+        this.appendText(svg, this.config.label, this.config.labelTextConfig);
 
-        var majorDelta = config.range / (config.majorTicks - 1);
-        for (var major = config.min; major <= config.max; major += majorDelta) {
-            var minorDelta = majorDelta / config.minorTicks;
-            for (var minor = major + minorDelta; minor < Math.min(major + majorDelta, config.max); minor += minorDelta) {
+        var majorDelta = this.config.range / (this.config.majorTicks - 1);
+        for (var major = this.config.min; major <= this.config.max; major += majorDelta) {
+            var minorDelta = majorDelta / this.config.minorTicks;
+            for (var minor = major + minorDelta; minor < Math.min(major + majorDelta, this.config.max); minor += minorDelta) {
                 var point1 = self.valueToPoint(minor, 0.75);
                 var point2 = self.valueToPoint(minor, 0.85);
 
@@ -98,13 +95,13 @@ function Gauge(_config) {
             .style("stroke", "#333")
             .style("stroke-width", "2px");
 
-            if (major == config.min || major == config.max) {
+            if (major == this.config.min || major == this.config.max) {
                 var point = self.valueToPoint(major, 0.63);
                 var refTextConfig = {
-                    size: Math.round(config.size / 16),
+                    size: Math.round(this.config.size / 16),
                     x: point.x,
                     y: point.y,
-                    anchor: major == config.min ? "start" : "end"
+                    anchor: major == this.config.min ? "start" : "end"
                 };
 
                 self.appendText(svg, major, refTextConfig);
@@ -115,40 +112,12 @@ function Gauge(_config) {
 
         self.drawPointer(self.value);
         pointerContainer.append("circle")
-        .attr("cx", config.size / 2)
-        .attr("cy", config.size / 2)
-        .attr("r", 0.12 * config.radius)
+        .attr("cx", this.config.size / 2)
+        .attr("cy", this.config.size / 2)
+        .attr("r", 0.12 * this.config.radius)
         .style("fill", "#4684EE")
         .style("stroke", "#666")
         .style("opacity", 1);
-    };
-
-    // TODO currently duplicated across all widgets... I want inheritence dammit!
-    this.putJSON = function(jsonObject) {
-        config.controls.forEach(function(control) {
-            // TODO bail if source does not cointain '.'
-            var source = control.source.split('.');
-            if (source[0] == jsonObject.fieldID) {
-            	  var field = source[1];
-                if (field in jsonObject) {
-                    var value = eval('jsonObject.' + field);
-                    
-                    // Convert to correct units
-                    var outUnits = '';
-                    if (typeof control.units != 'undefined' && field in unit) {
-                      var inUnits = unit[field];
-                      outUnits = control.units;
-                      if (inUnits != outUnits) {
-                        var newValue = new Qty(value + inUnits);
-                        value = newValue.to(outUnits);
-                        value = value.scalar;
-                      }
-                    }
-                    
-                    self.put(control.label, value);
-                }
-            }
-        });
     };
 
     this.put = function(controlName, value) {
@@ -167,18 +136,18 @@ function Gauge(_config) {
         .attr("d", d3.svg.arc()
             .startAngle(self.valueToRadians(start))
             .endAngle(self.valueToRadians(end))
-            .innerRadius(0.65 * config.radius)
-            .outerRadius(0.85 * config.radius))
-        .attr("transform", function() { return "translate(" + config.size / 2 + ", " + config.size / 2 + ") rotate(270)"; });
+            .innerRadius(0.65 * this.config.radius)
+            .outerRadius(0.85 * this.config.radius))
+        .attr("transform", function() { return "translate(" + self.config.size / 2 + ", " + self.config.size / 2 + ") rotate(270)"; });
     };
 
     this.drawPointer = function(value) {
-        var delta = config.range / 13,
+        var delta = this.config.range / 13,
             head = self.valueToPoint(value, 0.85),
             head1 = self.valueToPoint(value - delta, 0.12),
             head2 = self.valueToPoint(value + delta, 0.12),
 
-            tailValue = value -  (config.range * (1/(270/360)) / 2),
+            tailValue = value -  (this.config.range * (1/(270/360)) / 2),
             tail = self.valueToPoint(tailValue, 0.28),
             tail1 = self.valueToPoint(tailValue - delta, 0.12),
             tail2 = self.valueToPoint(tailValue + delta, 0.12),
@@ -210,11 +179,11 @@ function Gauge(_config) {
             .text(Math.round(value))
             .enter();
 
-        self.appendText(container, Math.round(value), config.valueTextConfig);
+        self.appendText(container, Math.round(value), this.config.valueTextConfig);
     };
 
     this.valueToDegrees = function(value) {
-        return value / config.range * 270 - 45;
+        return value / this.config.range * 270 - 45;
     };
 
     this.valueToRadians = function(value) {
@@ -223,8 +192,8 @@ function Gauge(_config) {
 
     this.valueToPoint = function(value, factor) {
         var point = {
-            x: config.size / 2 - config.radius * factor * Math.cos(self.valueToRadians(value)),
-            y: config.size / 2 - config.radius * factor * Math.sin(self.valueToRadians(value))
+            x: this.config.size / 2 - this.config.radius * factor * Math.cos(self.valueToRadians(value)),
+            y: this.config.size / 2 - this.config.radius * factor * Math.sin(self.valueToRadians(value))
         };
 
         return point;
@@ -244,3 +213,6 @@ function Gauge(_config) {
 
     self.render();
 }
+
+Gauge.prototype = new Widget();
+
