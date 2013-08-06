@@ -1,7 +1,7 @@
 ---
 # Adding the suffix .Max or .Min to any JSON source will give you the maximum or minimum value over time.
 
-  - id: status
+  - id: gps status
     type: Text
     width: 200
     height: 150

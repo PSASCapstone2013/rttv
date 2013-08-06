@@ -38,7 +38,7 @@ def tornado_thread(arg1, arg2): # defines a thread that runs a Tornado IO loop
     
 # Send JSON object to the front-end application
 def send_json_obj(json_obj):
-    if json_obj == None:
+    if bool(json_obj) == False:
         return
 
     # To decode the JSON objects in Python, use:
