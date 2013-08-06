@@ -1,10 +1,8 @@
 function Widget (config) {
     this.config = config;
-
     this.maxVal = 0;
     this.minVal = 99999;
 
-    var self = this;
     $('.container').append("<div class=\"widget " + this.config.id + "\" id=\"widget " + this.config.id + "\"></div>");
 }
 
@@ -33,31 +31,24 @@ Widget.prototype = {
                             value = -value;
                         }
                     }
-
-                    if (isFloat(value)) {
-                        value = value.toFixed(2);
-                    }
-                    else {
-                      value = value.toFixed(0);
-                    }
+                    value = isFloat(value) ? value.toFixed(2) : value.toFixed(0);
 
                     // Convert to correct units
                     // Currently all possible input units are looked up in scripts/units.js
                     // Conversions are handled by scripts/quantities.js
-                    var outUnits = '';
-                    if (typeof control.units != 'undefined' && field in unit) {
-                      var inUnits = unit[field];
-                      outUnits = control.units;
-
-                      var newValue = new Qty(value + inUnits);
-                      value = newValue.to(outUnits);
-                      value = value.toPrec(0.01);
+                    if (field in unit) {
+                        var outUnits = '';
+                        var inUnits = unit[field];
+                        var newValue = new Qty(value + inUnits);
+                        if (typeof control.units != 'undefined') {
+                          outUnits = control.units;
+                          value = newValue.to(outUnits);
+                          value = value.toPrec(0.01);
+                        } else {
+                          outUnits = unit[field];
+                          value = newValue.to(outUnits);
+                      }
                     }
-                    else if (field in unit) {
-                      outUnits = unit[field];
-                      value = newValue.to(outUnits);
-                    }
-
                     self.put(control.label, value);
                 }
             }

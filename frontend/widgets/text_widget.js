@@ -1,5 +1,4 @@
 function TextWidget(config) {
-
     Widget.call(this, config);
 
     $('.container').append("<script type=\"text/javascript\">document.getElementById('widget " + this.config.id + "').style.width=\"" + this.config.width + "px\";</script>");
@@ -7,8 +6,7 @@ function TextWidget(config) {
 
     var text = "",
         value_labels = {},
-        divElement = document.getElementById('widget ' + this.config.id),
-        maxval = 0, minval = 99999;
+        divElement = document.getElementById('widget ' + this.config.id);
 
     if (this.config.controls) {
         this.config.controls.forEach(function(control) {

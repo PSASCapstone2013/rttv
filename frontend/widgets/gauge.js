@@ -1,12 +1,5 @@
 function Gauge(config) {
-<<<<<<< HEAD
     Widget.call(this, config);
-=======
-    this.config = config;
-    
-    $('.container').append("<div class=\"widget " + this.config.id + "\" id=\"widget " + this.config.id + "\"></div>");
-
->>>>>>> put is now working in putJSON prototype
     var self = this;
     self.value = 0;
 

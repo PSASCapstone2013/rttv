@@ -4,7 +4,6 @@ function LineGraph(config) {
     var dataCount = 0, // keep track of the number of data points we receive
                        // when we reach maxDataSize, we stop scaling x-axis and start scrolling
         data = zeros(0),
-        id = this.config.id || 'LineGraph',
         xAxisLabel = this.config.xAxisLabel || 'X',
         yAxisLabel = this.config.controls[0].label || 'Y',
         labelMargin = {top: 10, right: 10, bottom: 20, left: 60},
@@ -28,7 +27,7 @@ function LineGraph(config) {
         .y0(this.config.height)
         .y1(function(d) { return mapY(d); }),
 
-        svg = d3.select(".widget." + id).append("svg")
+        svg = d3.select(".widget." + this.config.id).append("svg")
             .attr("width", this.config.width + labelMargin.left + labelMargin.right)
             .attr("height", this.config.height + labelMargin.top + labelMargin.bottom)
             .style("background-color", "white")
