@@ -94,4 +94,5 @@ function LineGraph(config) {
     };
 }
 
-LineGraph.prototype = new Widget();
+LineGraph.prototype = Object.create(Widget.prototype, {constructor: {value: LineGraph, enumerable: false, writable: true, configurable: true}});
+

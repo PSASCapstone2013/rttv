@@ -43,4 +43,4 @@ function TextWidget(config) {
     }
 }
 
-TextWidget.prototype = new Widget();
+TextWidget.prototype = Object.create(Widget.prototype, {constructor: {value: TextWidget, enumerable: false, writable: true, configurable: true}});

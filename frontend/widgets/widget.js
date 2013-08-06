@@ -10,6 +10,7 @@ function Widget (config) {
 
 Widget.prototype = {
     putJSON: function(jsonObject) {
+        var self = this;
         this.config.controls.forEach(function(control) {
             var self = this;
             // TODO bail if source does not cointain '.'
