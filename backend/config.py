@@ -36,7 +36,9 @@ LOG_FILE_FORMAT = datetime.datetime.now().strftime("log_%Y.%m.%d_%H-%M-%S")
 MILLI = 0.001
 MICRO = 0.000001
 NANO  = 0.000000001
-G_FORCE = 9.80665 # meters per second squared
+GFORCE_EQ_X_MPS2 = 9.80665 # g-force equals 9.81 meters per second squared
+GAUSS_EQ_X_TESLA = 0.0001 # gauss equals 0.0001 teslas
+KELVIN_MINUS_CELSIUS = 273.0 # (K = C + 273) equivalent to (K - C = 273)
 
 # this line must be in the end of this file
 import debug 

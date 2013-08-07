@@ -130,12 +130,12 @@ def valid_ADIS(json_obj):
         identifier = 'Accelerometer' + i
         if json_obj[identifier] < valid_ADIS.MIN_ACCELEROMETER:
             parsing_log.write("ADIS validation: ")
-            parsing_log.write("%s = %.3f g-force is too low!\n" % \
+            parsing_log.write("%s = %.3f m/s^2 is too low!\n" % \
                               (identifier, json_obj[identifier]))
             valid = False
         if json_obj[identifier] > valid_ADIS.MAX_ACCELEROMETER:
             parsing_log.write("ADIS validation: ")
-            parsing_log.write("%s = %.3f g-force is too high!\n" % \
+            parsing_log.write("%s = %.3f m/s^2 is too high!\n" % \
                               (identifier, json_obj[identifier]))
             valid = False
     
@@ -143,23 +143,23 @@ def valid_ADIS(json_obj):
         identifier = 'Magnetometer' + i
         if json_obj[identifier] < valid_ADIS.MIN_MAGNETOMETER:
             parsing_log.write("ADIS validation: ")
-            parsing_log.write("%s = %.3f gauss is too low!\n" % \
+            parsing_log.write("%s = %.3f T is too low!\n" % \
                               (identifier, json_obj[identifier]))
             valid = False
         if json_obj[identifier] > valid_ADIS.MAX_MAGNETOMETER:
             parsing_log.write("ADIS validation: ")
-            parsing_log.write("%s = %.3f gauss is too high!\n" % \
+            parsing_log.write("%s = %.3f T is too high!\n" % \
                               (identifier, json_obj[identifier]))
             valid = False
 
     if json_obj['Temperature'] < valid_ADIS.MIN_TEMPERATURE:
         parsing_log.write("ADIS validation: ")
-        parsing_log.write("Temperature = %.3f C is too low!\n" % \
+        parsing_log.write("Temperature = %.3f K is too low!\n" % \
                           json_obj['Temperature'])
         valid = False
     if json_obj['Temperature'] > valid_ADIS.MAX_TEMPERATURE:
         parsing_log.write("ADIS validation: ")
-        parsing_log.write("Temperature = %.3f C is too high!\n" % \
+        parsing_log.write("Temperature = %.3f K is too high!\n" % \
                           json_obj['Temperature'])
         valid = False
     
@@ -183,14 +183,14 @@ def valid_ADIS(json_obj):
 # http://www.analog.com/static/imported-files/data_sheets/ADIS16400_16405.pdf
 valid_ADIS.MIN_POWER_SUPPLY  = 4.75    # Volts
 valid_ADIS.MAX_POWER_SUPPLY  = 5.25    # Volts
-valid_ADIS.MIN_GYROSCOPE     = -300    # deg/sec
-valid_ADIS.MAX_GYROSCOPE     = 300     # deg/sec
-valid_ADIS.MIN_ACCELEROMETER = -18     # g-force (to be converted into m/s^2)
-valid_ADIS.MAX_ACCELEROMETER = 18      # g-force (to be converted into m/s^2)
-valid_ADIS.MIN_MAGNETOMETER  = -2.5    # gauss (to be converted into Tesla)
-valid_ADIS.MAX_MAGNETOMETER  = 2.5     # gauss (to be converted into Tesla)
-valid_ADIS.MIN_TEMPERATURE   = -40     # deg C (to be converted into K)
-valid_ADIS.MAX_TEMPERATURE   = 85      # deg C (to be converted into K)
-valid_ADIS.MIN_AUX_ADC       = 0       # Volts
+valid_ADIS.MIN_GYROSCOPE     = -300.0  # deg/sec
+valid_ADIS.MAX_GYROSCOPE     = 300.0   # deg/sec
+valid_ADIS.MIN_ACCELEROMETER = -18.0 * GFORCE_EQ_X_MPS2  # g-force to m/s^2
+valid_ADIS.MAX_ACCELEROMETER = 18.0 * GFORCE_EQ_X_MPS2   # g-force to m/s^2
+valid_ADIS.MIN_MAGNETOMETER  = -2.5 * GAUSS_EQ_X_TESLA # gauss to tesla (T)
+valid_ADIS.MAX_MAGNETOMETER  = 2.5 * GAUSS_EQ_X_TESLA  # gauss to tesla (T)
+valid_ADIS.MIN_TEMPERATURE   = -40.0 + KELVIN_MINUS_CELSIUS  # C to K
+valid_ADIS.MAX_TEMPERATURE   = 85.0 + KELVIN_MINUS_CELSIUS   # C to K
+valid_ADIS.MIN_AUX_ADC       = 0.0     # Volts
 valid_ADIS.MAX_AUX_ADC       = 3.3     # Volts
 

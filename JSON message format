@@ -1,66 +1,72 @@
 GPS:
-Obj = {
-		'fieldID': 4 bytes,
-		'timestamp': 6 bytes,
-		'AgeOfDiff': 1byte,
-		'NumOfSats': 1byte,
-		'GPSWeek': 2byte,
-		'GPSTimeOfWeek': double,
-		'Latitude': double,
-		'Longitude': double,
-		'Height': float,
-		'VNorth': float,
-		'VEast': float,
-		'Vup': float,
-		'StdDevResid': float,
-		'NavMode': 2 bytes,
-		'ExtendedAgeOfDiff': 2 bytes
-	     
-	}
+Obj = {                            # please see units in comments in messages.py
+        'fieldID': 4 bytes,
+        'timestamp': 6 bytes,
+        'AgeOfDiff': 1byte,
+        'NumOfSats': 1byte,
+        'GPSWeek': 2byte,
+        'GPSTimeOfWeek': double,
+        'Latitude': double,
+        'Longitude': double,
+        'Height': float,
+        'VNorth': float,
+        'VEast': float,
+        'Vup': float,
+        'StdDevResid': float,
+        'NavMode': 2 bytes,
+        'ExtendedAgeOfDiff': 2 bytes
+         
+    }
 
 ADIS:
 
-Obj = {		'fieldID': 4 bytes,
-		'timestamp': 6 bytes,
-		'PowerSupply': 2 bytes,
-		'GyroscopeX': 2bytes,
-		'GyroscopeY': 2bytes,
-		'GyroscopeZ': 2 bytes,
-		'GyroscopeMagn': float,
-		'AccelerometerX': 2 bytes,
-		'AccelerometerY': 2 bytes,
-		'AccelerometerZ': 2 bytes,
-		'AccelerometerMagn': float,
-		'MagnetometerX': 2 bytes,
-		'MagnetometerY': 2 bytes,
-		'MagnetometerZ': 2 bytes,
-		'MagnetometerMagn': float,
-		'Temperature': 2 bytes,
-		'AuxiliaryADC': 2 bytes
-	      
-	}
+Obj = {                             please see units in comments in messages.py
+        'fieldID': 4 bytes,
+        'timestamp': 6 bytes,
+        'PowerSupply': 2 bytes,     volts (V)
+        'GyroscopeX': 2 bytes,      degrees per second (deg/sec)
+        'GyroscopeY': 2 bytes,      degrees per second (deg/sec)
+        'GyroscopeZ': 2 bytes,      degrees per second (deg/sec)
+        'GyroscopeMagn': float,     degrees per second (deg/sec)
+        'AccelerometerX': 2 bytes,  meters per second squared (m/s^2)
+        'AccelerometerY': 2 bytes,  meters per second squared (m/s^2)
+        'AccelerometerZ': 2 bytes,  meters per second squared (m/s^2)
+        'AccelerometerMagn': float, meters per second squared (m/s^2)
+        'MagnetometerX': 2 bytes,   teslas (T)
+        'MagnetometerY': 2 bytes,   teslas (T)
+        'MagnetometerZ': 2 bytes,   teslas (T)
+        'MagnetometerMagn': float,  teslas (T)
+        'Temperature': 2 bytes,     Kelvin (K)
+        'AuxiliaryADC': 2 bytes     volts (V)
+          
+    }
 
 ERRO:
 obj = {
-        'fieldID': fieldID,
-        'timestamp': timestamp,
-        'message': data,
+        'fieldID':
+        'timestamp':
+        'message': variable,        string of characters
     }
 
+MESG:
+        'fieldID':
+        'timestamp':
+        'message' variable,         string of characters
+    
 Packet Analyze:
  obj = {
         'fieldID': 'Analyze',
-        'PacketReceived':   	#number of packet received in a specific time interval
-	'latestPacketReceived': timestamp of the latest packet received 
+        'PacketReceived':       #number of packet received in a specific time interval
+        'latestPacketReceived': timestamp of the latest packet received 
         'PacketLost':[],
     }
 # packetLost is a list of lost packet, each element has:
 {
-	'From'      : time when we start loosing packets
-	'To'  	    : time when we receive a new packet
-   	'PacketLost': Number of packets lost
+        'From'      : time when we start loosing packets
+        'To'        : time when we receive a new packet
+        'PacketLost': Number of packets lost
         
-	
+    
 
 
 

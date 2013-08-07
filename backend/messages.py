@@ -22,19 +22,19 @@ def json_GPS_bin1(message_id, timestamp, data):
     obj = {
         'fieldID': message_id,
         'timestamp': timestamp,
-        'AgeOfDiff': data[0],
-        'NumOfSats': data[1],
-        'GPSWeek': data[2],
-        'GPSTimeOfWeek': data[3],
-        'Latitude': data[4],
-        'Longitude': data[5],
-        'Height': data[6],
-        'VNorth': data[7],
-        'VEast': data[8],
-        'Vup': data[9],
-        'StdDevResid': data[10],
-        'NavMode': data[11],
-        'ExtendedAgeOfDiff': data[12]
+        'AgeOfDiff': data[0],                   # seconds (s)
+        'NumOfSats': data[1],                   # a number
+        'GPSWeek': data[2],                     # a number
+        'GPSTimeOfWeek': data[3],               # seconds (s)
+        'Latitude': data[4],                    # degrees
+        'Longitude': data[5],                   # degrees
+        'Height': data[6],                      # meters (m)
+        'VNorth': data[7],     # velocity North # meters per second (m/s)
+        'VEast': data[8],      # velocity East  # meters per second (m/s)
+        'Vup': data[9],        # velocity up    # meters per second (m/s)
+        'StdDevResid': data[10],                # meters (m)
+        'NavMode': data[11],                    # bit flags
+        'ExtendedAgeOfDiff': data[12]           # seconds (s)
     }
     return obj
 
@@ -43,30 +43,28 @@ def json_ADIS(message_id, timestamp, data):
     obj = {
         'fieldID': message_id,
         'timestamp': timestamp,
-        'PowerSupply': data[0] * json_ADIS.POWER_SUPPLY * MILLI,
-            # Range After Conversion: 4.75 V - 5.25 V
-            # multiplication makes no sense here; division does
+        'PowerSupply': data[0] * json_ADIS.POWER_SUPPLY,
         'GyroscopeX': data[1] * json_ADIS.RATE_GYRO,
         'GyroscopeY': data[2] * json_ADIS.RATE_GYRO,
         'GyroscopeZ': data[3] * json_ADIS.RATE_GYRO,
-        'AccelerometerX': data[4] * json_ADIS.ACCELEROMETER * MILLI,
-        'AccelerometerY': data[5] * json_ADIS.ACCELEROMETER * MILLI,
-        'AccelerometerZ': data[6] * json_ADIS.ACCELEROMETER * MILLI,
-        'MagnetometerX': data[7] * json_ADIS.MAGNETOMETER * MILLI,
-        'MagnetometerY': data[8] * json_ADIS.MAGNETOMETER * MILLI, 
-        'MagnetometerZ': data[9] * json_ADIS.MAGNETOMETER * MILLI,
-        'Temperature': data[10] * json_ADIS.TEMPERATURE,
-        'AuxiliaryADC': data[11] * json_ADIS.AUX_ADC * MICRO,
+        'AccelerometerX': data[4] * json_ADIS.ACCELEROMETER,
+        'AccelerometerY': data[5] * json_ADIS.ACCELEROMETER,
+        'AccelerometerZ': data[6] * json_ADIS.ACCELEROMETER,
+        'MagnetometerX': data[7] * json_ADIS.MAGNETOMETER,
+        'MagnetometerY': data[8] * json_ADIS.MAGNETOMETER, 
+        'MagnetometerZ': data[9] * json_ADIS.MAGNETOMETER,
+        'Temperature': data[10] * json_ADIS.TEMPERATURE + KELVIN_MINUS_CELSIUS,
+        'AuxiliaryADC': data[11] * json_ADIS.AUX_ADC,
     }
     return obj
     
 # ADIS fixed to float unit conversion coefficients
-json_ADIS.POWER_SUPPLY = float(2.418)  # milli Volts        (mV)
-json_ADIS.RATE_GYRO = float(0.05)      # degrees per second (deg/sec)
-json_ADIS.ACCELEROMETER = float(3.33)  # milli gee          (mG)
-json_ADIS.MAGNETOMETER = float(0.5)    # milli gauss        (mgauss)
-json_ADIS.TEMPERATURE = float(0.14)    # degrees in Celsius (deg C)
-json_ADIS.AUX_ADC = float(806)         # micro Volts        (mu V)    
+json_ADIS.POWER_SUPPLY = 2.418 * MILLI                     # volts (V)
+json_ADIS.RATE_GYRO = 0.05                                 # deg/sec
+json_ADIS.ACCELEROMETER = 3.33 * MILLI * GFORCE_EQ_X_MPS2  # m/s^2
+json_ADIS.MAGNETOMETER = 0.5 * MILLI * GAUSS_EQ_X_TESLA    # tesla (T)
+json_ADIS.TEMPERATURE = 0.14                               # Celsius (C)
+json_ADIS.AUX_ADC = 806.0 * MICRO                          # volts (V)
 
 ##################################################################### MPU9 ####
     
@@ -117,7 +115,7 @@ def jsonROLL(message_id, timestamp, data):
     obj = {
         'fieldID': message_id,
         'timestamp': timestamp,
-        'finPosition': data[0], # servo PWM in microseconds
+        'finPosition': data[0] * MICRO, # servo PWM in seconds
         'rollServoDisable': data[1], # boolean
     }
     return obj
