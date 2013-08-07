@@ -69,23 +69,23 @@ def ADIS_conversion(data, parsed_data, obj):
         (data[6:8].encode("hex"), parsed_data[3], obj['GyroscopeZ'], "deg/sec"))
         
     parsing_log.write("AccelerometerX: %s %10d %15.3f %10s\n" % \
-        (data[8:10].encode("hex"), parsed_data[4], obj['AccelerometerX'], "g-force"))
+        (data[8:10].encode("hex"), parsed_data[4], obj['AccelerometerX'], "m/s^2"))
     parsing_log.write("AccelerometerY: %s %10d %15.3f %10s\n" % \
-        (data[10:12].encode("hex"), parsed_data[5], obj['AccelerometerY'], "g-force"))
+        (data[10:12].encode("hex"), parsed_data[5], obj['AccelerometerY'], "m/s^2"))
     parsing_log.write("AccelerometerZ: %s %10d %15.3f %10s\n" % \
-        (data[12:14].encode("hex"), parsed_data[6], obj['AccelerometerZ'], "g-force"))
+        (data[12:14].encode("hex"), parsed_data[6], obj['AccelerometerZ'], "m/s^2"))
     
-    parsing_log.write("MagnetometerX:  %s %10d %15.3f %10s\n" % \
-        (data[14:16].encode("hex"), parsed_data[7], obj['MagnetometerX'], "gauss"))
-    parsing_log.write("MagnetometerY:  %s %10d %15.3f %10s\n" % \
-        (data[16:18].encode("hex"), parsed_data[8], obj['MagnetometerY'], "gauss"))
-    parsing_log.write("MagnetometerZ:  %s %10d %15.3f %10s\n" % \
-        (data[18:20].encode("hex"), parsed_data[9], obj['MagnetometerZ'], "gauss"))
+    parsing_log.write("MagnetometerX:  %s %10d %15.9f %10s\n" % \
+        (data[14:16].encode("hex"), parsed_data[7], obj['MagnetometerX'], "teslas"))
+    parsing_log.write("MagnetometerY:  %s %10d %15.9f %10s\n" % \
+        (data[16:18].encode("hex"), parsed_data[8], obj['MagnetometerY'], "teslas"))
+    parsing_log.write("MagnetometerZ:  %s %10d %15.9f %10s\n" % \
+        (data[18:20].encode("hex"), parsed_data[9], obj['MagnetometerZ'], "teslas"))
         
     parsing_log.write("Temperature:    %s %10d %15.3f %10s\n" % \
-        (data[20:22].encode("hex"), parsed_data[10], obj['Temperature'], "deg C"))
+        (data[20:22].encode("hex"), parsed_data[10], obj['Temperature'], "deg K"))
         
-    parsing_log.write("AuxiliaryADC:   %s %10d %15.3f %10s\n" % \
+    parsing_log.write("AuxiliaryADC:   %s %10d %15.9f %10s\n" % \
         (data[22:24].encode("hex"), parsed_data[11], obj['AuxiliaryADC'], "V"))
         
     parsing_log.write(
@@ -165,12 +165,12 @@ def valid_ADIS(json_obj):
     
     if json_obj['AuxiliaryADC'] < valid_ADIS.MIN_AUX_ADC:
         parsing_log.write("ADIS validation: ")
-        parsing_log.write("AuxiliaryADC = %.3f V is too low!\n" % \
+        parsing_log.write("AuxiliaryADC = %.9f V is too low!\n" % \
                           json_obj['AuxiliaryADC'])
         valid = False
     if json_obj['AuxiliaryADC'] > valid_ADIS.MAX_AUX_ADC:
         parsing_log.write("ADIS validation: ")
-        parsing_log.write("AuxiliaryADC = %.3f V is too high!\n" % \
+        parsing_log.write("AuxiliaryADC = %.9f V is too high!\n" % \
                           json_obj['AuxiliaryADC'])
         valid = False
     

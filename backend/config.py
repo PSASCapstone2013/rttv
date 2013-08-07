@@ -8,7 +8,7 @@ IP_ADDRESS = ""        # dafault IP
 PORT = 35001           # new port used in PSAS server-client example
 #PORT = 36000          # old port used in PSAS server-client example
 PACKET_SIZE = 4096     # maximum packet size to receive
-TIMEOUT = 0.1          # time in seconds to wait for a packet
+TIMEOUT = 0.1          # backend to frontend update frequency                       
 
 # debugging
 BAD_DEBUG_ONLY = False  # Show only debug information for bad cases
