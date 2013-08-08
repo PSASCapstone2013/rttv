@@ -12,6 +12,7 @@
     <script src="scripts/d3.v2.js"></script>
     <script src="scripts/d3_func.js"></script>
     <script src="scripts/js-yaml.min.js"></script>
+    <script src="scripts/units.js"></script>
     <script src="widgets/gauge.js"></script>
     <script src="widgets/line_graph.js"></script>
     <script src="widgets/text_widget.js"></script>
@@ -28,7 +29,7 @@
   var fileIn = LoadFile('configs/test_config.yml');
   /* Right now it will only work on firefox, at least my version, since we're directly accessing the file.
      You can open in chrome with the switch "--allow-file-access-from-files" as well.
-     It'll need updated to something like this once the webserver is set up:
+     It'll need updated to something like this once the http server is set up:
      var fileIn = LoadFile('http://webserver/frontend/configs/test_config.yml'); */
   var configs = jsyaml.load(fileIn);
   
@@ -96,24 +97,26 @@
       try {
         var json = JSON.parse(message.data);
         
-        if (json.fieldID != undefined) { // the version of the server i'm using is sending mostly empty json
+        if (json.fieldID != undefined) {
           widgets.forEach(function(widget) {
             widget.putJSON(json);
             widget.draw();
           });
         }
         
+        // Parsing Analyze packet to show connection status.
+        // Exists here since what we're displaying is beyond scope of config file.
         if (json.fieldID == 'Analyze'){
-        	var received = json.PacketReceived;
-        	var lostPercent = 0;
-        	if (received > 0) {
-        		var lost = json.PacketLost;
-        		var lostTotal = 0;
-        		for (i=0; i<lost.length; i++) {
-        			lostTotal += each[i].PacketsLost;
-        		}
-        		lostPercent = lostTotal / (received + lostTotal) * 100;
-        	}
+          var received = json.PacketReceived;
+          var lostPercent = 0;
+          if (received > 0) {
+            var lost = json.PacketLost;
+            var lostTotal = 0;
+            for (i=0; i<lost.length; i++) {
+              lostTotal += each[i].PacketsLost;
+            }
+            lostPercent = lostTotal / (received + lostTotal) * 100;
+          }
           var connection = 'Connection is <ok>open</ok>'
             + '<br>Packets Received: ' + received
             + '<br>Percent Loss: ' + lostPercent + '%'
