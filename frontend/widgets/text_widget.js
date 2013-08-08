@@ -23,7 +23,24 @@ function TextWidget(_config) {
             if (source[0] == jsonObject.fieldID) {
                 if (source[1] in jsonObject) {
                     var value = eval('jsonObject.' + source[1]);
-                    // Check for the two built in config options for max and min values
+                    
+                    var outUnits = '';
+                    
+                    if (typeof control.units != 'undefined') {
+                    	// TODO, make this work
+                      //var inUnits = unit[source[1]];
+                      outUnits = control.units;
+                      
+                      //var newValue = new Qty(value + 
+                      //var c = new Qty('1 m');
+                      //c = c.to('millim');
+                      
+                    }
+                    else if (source[1] in unit) { 
+                      outUnits = unit[source[1]]; 
+                    }
+                    
+                    // Check for the three built in config options for max, min & neg values
                     if (typeof source[2] != 'undefined') {
                         if (source[2] == 'Max') {
                             if (value > maxval) { maxval = value; }
@@ -33,25 +50,28 @@ function TextWidget(_config) {
                             if (value < minval) { minval = value; }
                             value = minval;
                         }
+                        if (source[2] == 'Neg') {
+                            value = -value;
+                        }
                     }
-                    self.put(control.label, value);
+                    self.put(control.label, value, outUnits);
                 }
             }
         });
     };
     
-    this.put = function(controlLabel, value) {
+    this.put = function(controlLabel, value, units) {
         if (value_labels[controlLabel]) {
-        	if (isFloat(value)) {
-              value_labels[controlLabel] = value.toFixed(2);
+          if (isFloat(value)) {
+              value_labels[controlLabel] = value.toFixed(2) + ' ' + units;
           }
           else {
-          	value_labels[controlLabel] = value.toFixed(0);
+            value_labels[controlLabel] = value.toFixed(0) + ' ' + units;
           }
         }
-        newText = '<strong>' + config.id.toUpperCase() + '</strong>';
+        newText = '<strong>' + config.id + '</strong>';
         jQuery.each(value_labels, function(label, value) {
-        	  newText += "<br>";
+            newText += "<br>";
             newText += label + ': ';
             newText += value;
         });

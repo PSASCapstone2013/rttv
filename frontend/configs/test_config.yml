@@ -1,7 +1,8 @@
 ---
 # Adding the suffix .Max or .Min to any JSON source will give you the maximum or minimum value over time.
+# Adding the suffix .Neg to any JSON source will negate the incoming value.
 
-  - id: gps status
+  - id: GPS Status
     type: Text
     width: 200
     height: 150
@@ -11,33 +12,41 @@
       - label: Satellites
         source: "GPS\x01.NumOfSats"
         
-  - id: gps
+  - id: GPS
     type: Text
     width: 200
     height: 150
     controls:
       - label: Lat
         source: "GPS\x01.Latitude"
+        units: deg
       - label: Long
         source: "GPS\x01.Longitude"
+        units: deg
       - label: Height
         source: "GPS\x01.Height"
+        units: m
       - label: Max Height
         source: "GPS\x01.Height.Max"
+        units: m
         
-  - id: acceleration
+  - id: Acceleration
     type: Text
     width: 200
     height: 150
     controls:
       - label: X
         source: ADIS.AccelerometerX
+        units: m/s^2
       - label: Y
         source: ADIS.AccelerometerY
+        units: m/s^2
       - label: Z
         source: ADIS.AccelerometerZ
+        units: m/s^2
       - label: Magnitude
         source: ADIS.AccelerometerMagn
+        units: m/s^2
         
   - id: baz
     type: LineGraph
@@ -47,8 +56,9 @@
     controls:
       - label: Z Roll
         source: ADIS.GyroscopeX
+        units: deg/sec
         
-  - id: altitude
+  - id: Altitude
     type: Gauge
     label: Altitude
     size: 250
@@ -59,3 +69,4 @@
     controls:
       - label: Height
         source: "GPS\x01.Height"
+        units: m
