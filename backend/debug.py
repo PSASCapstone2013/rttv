@@ -1,4 +1,5 @@
 from config import *
+import platform
 
 parsing_log = None
 def open_logs():
@@ -7,9 +8,16 @@ def open_logs():
     global parsing_log
     
     parsing_log_file_name = \
-        datetime.datetime.now().strftime("parsing_log_%Y.%m.%d_%H-%M-%S.txt")
+        datetime.datetime.now().strftime("data_validation_log_%Y.%m.%d_%H-%M-%S.txt")
     parsing_log = open(parsing_log_file_name, 'w')
-        
+     
+def clear_screen():
+    if clear_screen.platform == 'Windows':
+        os.system('cls')
+    else:
+        os.system('clear')
+clear_screen.platform = platform.system()
+     
 def message_header(message_id, length, timestamp):
     if DEBUG and not BAD_DEBUG_ONLY:
         print "  %s %2d %.3f" % (message_id, length, float(timestamp) / 1e9),
@@ -29,6 +37,11 @@ def print_char(char):
 print_char.total = 0
 print_char.time_str = ""
 print_char.time_str_prev = ""
+
+def parsing_message(string):
+    if parsing_log == None:
+        return
+    parsing_log.write(string + '\n')
 
 def print_raw_data(data, bytes_per_line):
     counter = 0
@@ -96,11 +109,12 @@ def valid_ADIS(json_obj):
     valid = True
     if not DEBUG or parsing_log == None:
         return True
-    if json_obj['fieldID'] <> 'ADIS':
-        parsing_log.write("ADIS validation: ")
-        parsing_log.write("%s is not an ADIS id!\n" % \
-                          json_obj['fieldID'])
-        valid = False
+        
+    #if json_obj['fieldID'] <> 'ADIS':
+    #    parsing_log.write("ADIS validation: ")
+    #    parsing_log.write("%s is not an ADIS id!\n" % \
+    #                      json_obj['fieldID'])
+    #    valid = False
         
     if json_obj['PowerSupply'] < valid_ADIS.MIN_POWER_SUPPLY:
         parsing_log.write("ADIS validation: ")
@@ -194,3 +208,22 @@ valid_ADIS.MAX_TEMPERATURE   = 85.0 + KELVIN_MINUS_CELSIUS   # C to K
 valid_ADIS.MIN_AUX_ADC       = 0.0     # Volts
 valid_ADIS.MAX_AUX_ADC       = 3.3     # Volts
 
+def print_ADIS(obj):
+    print ("ADIS: PowerSupply   %.1f V\n" +
+           "      Temperature   %.1f K\n" +
+           "      AuxiliaryADC  %.9f V\n" +
+           "      Gyroscope     %6.3f (%6.3f %6.3f %6.3f) deg/sec\n" +
+           "      Accelerometer %6.3f (%6.3f %6.3f %6.3f) m/s^2\n" +
+           "      Magnetometer  %9.6f (%9.6f %9.6f %9.6f) teslas") % \
+       (obj['PowerSupply'], obj['Temperature'], obj['AuxiliaryADC'], \
+        obj['GyroscopeMagn'], \
+        obj['GyroscopeX'], obj['GyroscopeY'], obj['GyroscopeZ'], \
+        obj['AccelerometerMagn'], \
+        obj['AccelerometerX'], obj['AccelerometerY'], obj['AccelerometerZ'],
+        obj['MagnetometerMagn'], \
+        obj['MagnetometerX'], obj['MagnetometerY'], obj['MagnetometerZ'])
+        
+def print_ROLL(obj):
+    print ("ROLL: finPosition      %6.3f sec\n" +
+           "      rollServoDisable %6.3f of truth") % \
+          (obj['finPosition'], obj['rollServoDisable'])

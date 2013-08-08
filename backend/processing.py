@@ -1,0 +1,201 @@
+from config import *
+
+class Message:
+    counter = 0
+    data = {}
+    
+    def __init__(self):
+        self.reset()
+        
+    def reset(self):
+        self.counter = 0
+        self.data = {}
+        #for key in self.data.keys():
+        #    self.data[key] = 0
+
+    def overwrite(self, new_data):
+        self.data = new_data
+        self.counter += 1
+           
+    def average(self, new_data):
+        if self.data == {}:
+            self.overwrite(new_data)
+            return
+            
+        self.counter += 1
+        for key in new_data.keys(): # do averaging for every single field
+            new_value = new_data[key]
+            avg_value = self.data[key]
+            avg_value = ((avg_value * (self.counter-1) + new_value) / 
+                         self.counter)
+            self.data[key] = avg_value
+            
+    def add_other_fields(self):
+        self.data['fieldID'] = self.id
+        self.data['timestamp'] = 0 # TODO: figure out how it is used and
+                                   #       whether it is needed
+        
+    def magnitude(self, x, y, z):
+        return (x ** 2 + y ** 2 + z ** 2) ** 0.5
+            
+    
+class ADIS(Message):
+    id = 'ADIS'
+    
+    def add_other_fields(self):
+        self.data['fieldID'] = self.id
+        self.data['timestamp'] = 0
+        self.data['GyroscopeMagn'] = \
+            self.magnitude(self.data['GyroscopeX'],
+                           self.data['GyroscopeY'],
+                           self.data['GyroscopeZ'])
+        self.data['AccelerometerMagn'] = \
+            self.magnitude(self.data['AccelerometerX'],
+                           self.data['AccelerometerY'],
+                           self.data['AccelerometerZ'])
+        self.data['MagnetometerMagn'] = \
+            self.magnitude(self.data['MagnetometerX'],
+                           self.data['MagnetometerY'],
+                           self.data['MagnetometerZ'])
+    
+    def convert(self, tokens):
+        """ converts message data into a python object """
+        """ input: tuple containing tokenized raw message fields """
+        """ output: python dictionary object with fields in MKS units """
+        data = {
+            'PowerSupply': tokens[0] * self.convert.POWER_SUPPLY,
+            'GyroscopeX': tokens[1] * self.convert.RATE_GYRO,
+            'GyroscopeY': tokens[2] * self.convert.RATE_GYRO,
+            'GyroscopeZ': tokens[3] * self.convert.RATE_GYRO,
+            'AccelerometerX': tokens[4] * self.convert.ACCELEROMETER,
+            'AccelerometerY': tokens[5] * self.convert.ACCELEROMETER,
+            'AccelerometerZ': tokens[6] * self.convert.ACCELEROMETER,
+            'MagnetometerX': tokens[7] * self.convert.MAGNETOMETER,
+            'MagnetometerY': tokens[8] * self.convert.MAGNETOMETER, 
+            'MagnetometerZ': tokens[9] * self.convert.MAGNETOMETER,
+            'Temperature': (tokens[10] * self.convert.TEMPERATURE + 
+                            KELVIN_MINUS_CELSIUS),
+            'AuxiliaryADC': tokens[11] * self.convert.AUX_ADC,
+        }
+        return data
+    convert.POWER_SUPPLY = 2.418 * MILLI                     # volts (V)
+    convert.RATE_GYRO = 0.05                                 # deg/sec
+    convert.ACCELEROMETER = 3.33 * MILLI * GFORCE_EQ_X_MPS2  # m/s^2
+    convert.MAGNETOMETER = 0.5 * MILLI * GAUSS_EQ_X_TESLA    # tesla (T)
+    convert.TEMPERATURE = 0.14                               # Celsius (C)
+    convert.AUX_ADC = 806.0 * MICRO                          # volts (V)
+
+class GPS1(Message):
+    id = 'GPS\x01'
+    
+    def convert(self, tokens):
+        data = {
+            'AgeOfDiff': tokens[0],                   # seconds (s)
+            'NumOfSats': tokens[1],                   # a number
+            'GPSWeek': tokens[2],                     # a number
+            'GPSTimeOfWeek': tokens[3],               # seconds (s)
+            'Latitude': tokens[4],                    # degrees
+            'Longitude': tokens[5],                   # degrees
+            'Height': tokens[6],                      # meters (m)
+            'VNorth': tokens[7],     # velocity North # meters per second (m/s)
+            'VEast': tokens[8],      # velocity East  # meters per second (m/s)
+            'Vup': tokens[9],        # velocity up    # meters per second (m/s)
+            'StdDevResid': tokens[10],                # meters (m)
+            'NavMode': tokens[11],                    # bit flags
+            'ExtendedAgeOfDiff': tokens[12]           # seconds (s)
+        }
+        return data
+
+class ROLL(Message):
+    id = 'ROLL'
+    
+    def convert(self, tokens):
+        obj = {
+            'finPosition': tokens[0] * MICRO, # servo PWM in seconds
+            'rollServoDisable': float(tokens[1]),    # boolean
+        }
+        return obj
+        
+class MPL3(Message):
+    id = 'MPL3'
+    
+    def convert(self, tokens):
+        data = {
+            'field0': tokens[0],
+            'field1': tokens[1],
+        }
+        return data
+    
+class MPU9(Message):
+    id = 'MPU9'
+    
+    def convert(self, tokens):
+        data = {
+            'field0': tokens[0],
+            'field1': tokens[1],
+            'field2': tokens[2],
+            'field3': tokens[3],
+            'field4': tokens[4],
+            'field5': tokens[5],
+            'field6': tokens[6],
+        }
+        return data
+
+class ERRO(Message):
+    id = 'ERRO'
+    
+    def convert(self, timestamp, data):
+        obj = {
+            'fieldID': 'ERRO',
+            'timestamp': timestamp,
+            'message': data,
+        }
+        return obj
+
+class MESG(Message):
+    id = 'MESG'
+
+    def convert(self, timestamp, data):
+        obj = {
+            'fieldID': 'MESG',
+            'timestamp': timestamp,
+            'message': data, # string
+        }
+        return obj
+    
+class Stat():
+    id = 'Analyze'
+    packets_received_total = 0
+    last_seq = sys.maxint # the sequence number of the very last packet
+    packets_lost_total = 0 # number of packets lost
+    
+    def new_packet_received(self, seq):
+        self.check_for_lost_packets(seq)
+        self.last_seq = seq
+        self.packets_received_total += 1
+        
+    def check_for_lost_packets(self, seq):
+        difference = seq - self.last_seq
+        if difference <= 1:
+            return
+        self.packets_lost_total += seq - self.last_seq - 1
+        
+    def reset(self):
+        # TODO: figure out which fields need to be reset
+        pass
+        
+    def get(self):
+        obj = {
+            'fieldID': 'Analyze',
+            'PacketReceived': self.packets_received_total,
+            'latestPacketReceived': self.last_seq,
+            'PacketLost': self.packets_lost_total,
+        }
+        return obj
+    
+class Messages:
+    adis = ADIS()
+    gps1 = GPS1()
+    roll = ROLL()
+    mpl3 = MPL3()
+

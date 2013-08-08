@@ -1,6 +1,7 @@
 
 from config import *
-from averaging import *
+from processing import *
+from back_to_front import *
 
 def init_socket():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -16,6 +17,13 @@ def receive_packet(sock):
     except socket.timeout:
         return ''
 
+def parse_sequence(message):
+    # get and check packet sequence number
+    seq = int(message[0:SEQUENCE_LENGTH].encode('hex'), 16)
+    # if DEBUG and not BAD_DEBUG_ONLY:
+    #    print seq, "(0x%.4x)" % seq
+    return seq
+        
 def check_for_lost_packets(seq, last_seq,
                            previous_packet_received, latest_packet_received):
     packets_lost = seq - last_seq - 1
@@ -59,73 +67,41 @@ def data_is_truncated(message, length_expected):
 
 
 def parse_data(message_id, timestamp, length, data):
+    if message_id == 'SEQN':
+        return # skip
+        
     if message_id == 'ERRO': # data contains a string message
-        return json_ERRO(message_id, timestamp, data)
+        print "ERRO:\"" + data + "\""
+        obj = ERRO().convert(timestamp, data)
+        send_json_obj(obj)
+        return
+        
     if message_id == 'MESG': # data contains a string message
-        if DEBUG and not BAD_DEBUG_ONLY:
-            print "MESG:\"" + data + "\""
-        return json_MESG(message_id, timestamp, data)
+        print "MESG:\"" + data + "\""
+        obj = MESG().convert(timestamp, data)
+        send_json_obj(obj)
+        return
 
-    # parse data
+    # parse messages containing flight data
     format = message_type.get(message_id)
     if format == None or len(data) <> format.size: # validate data format
-        if DEBUG:
-            print "  warning: unable to parse message of type", message_id
-        return None # skip this message
+        debug.parsing_message("Warning: unable to parse message " + message_id)
+        return # skip this message
+    # parse date into python tuple containing message fields
+    parsed_data = format.unpack(data)
 
-    parsed_data = format.unpack(data) # tuple containing parsed data
+    if message_id == 'ADIS':
+        obj = Messages.adis.convert(parsed_data)
+        Messages.adis.average(obj)
+        if not debug.valid_ADIS(obj):
+            #debug.print_raw_data(data, 2) # 2 bytes per line
+            debug.ADIS_conversion(data, parsed_data, obj)
+        return
 
-    if message_id == 'SEQN':
-        return None # skip
-
-    elif message_id == 'GPS\x01':
-        parse_data.last_GPS_mess = \
-            json_GPS_bin1(message_id, timestamp, parsed_data)
-
-    elif message_id == 'ADIS':
-        #debug.print_raw_data(data, 2) # 2 bytes per line
-        json_obj = json_ADIS(message_id, timestamp, parsed_data)
-        if not debug.valid_ADIS(json_obj):
-            debug.ADIS_conversion(data, parsed_data, json_obj)
-
-        # TODO: move this for-loop into a separate function
-        for i in ['X', 'Y', 'Z']:
-            parse_data.ADIS_mess['Gyroscope' + i] = \
-                (json_obj['Gyroscope' + i] + parse_data.ADIS_mess['Gyroscope'+i])
-            parse_data.ADIS_mess['Accelerometer' + i] = \
-                (json_obj['Accelerometer'+i] +
-                 parse_data.ADIS_mess['Accelerometer'+i])
-            parse_data.ADIS_mess['Magnetometer' + i] = \
-                (json_obj['Magnetometer'+i] +
-                 parse_data.ADIS_mess['Magnetometer'+i])
-        parse_data.ADIS_count = parse_data.ADIS_count + 1
-        parse_data.ADIS_mess = json_obj
-
-    elif message_id == 'MPU9':
-        parse_data.last_MPU9_mess = \
-            json_MPU9(message_id, timestamp, parsed_data)
-
-    elif message_id == 'MPL3':
-        parse_data.last_MPL3_mess = \
-            jsonMPL3(message_id, timestamp, parsed_data)
-    
-    elif message_id == 'ROLL':
-        json_obj = jsonROLL(message_id, timestamp, parsed_data)
-        json_obj['finPosition'] = json_obj['finPosition'] + parse_data.last_ROLL_mess['finPosition']
-	if (json_obj['rollServoDisable']):
-            parse_data.ROLL_true = parse_data.ROLL_true + 1
-        else:
-            parse_data.ROLL_false = parse_data.ROLL_false + 1
-        parse_data.ROLL_count = parse_data.ROLL_count + 1
-        parse_data.last_ROLL_mess = json_obj
-
-
-
-
-
-
-
-
-
-
-
+    if message_id == 'ROLL':
+        obj = Messages.roll.convert(parsed_data)
+        Messages.roll.average(obj)
+        return
+            
+    # TODO: GPS1 parsing/processing when actual data is available for testing
+    # TODO: MPL3 parsing/processing when PSAS makes it ready

@@ -1,32 +1,34 @@
 # modularization part
 from config import *
-from averaging import *
+from processing import *
 from parsing import *
 from back_to_front import *
 
-# to be modularized
+stats = Stat()
 
+# global objects for data processing
 def main():
+    stats = Stat()
     debug.open_logs()
     thread.start_new_thread(tornado_thread, (0,0))
     receive_packets()
     
 def receive_packets():
+    global stats
     log_file = open(LOG_FILE_FORMAT, "a")
     sock = init_socket()
-    init_data()
-    last_seq = sys.maxint
 
     # listen socket
     while True:
         new_timeout = data_sync()
-        sock.settimeout(new_timeout) 
+        sock.settimeout(new_timeout)
         message = receive_packet(sock)
         if message == '': # timeout - no packets received during TIMEOUT
             continue # get the next packet
         if PRINT_CHAR_FOR_ARRIVING_PACKETS:
             debug.print_char('.') # packet received successfully --> print a dot
-        seq, last_seq = check_sequence_number(message, last_seq)
+        seq = parse_sequence(message)
+        stats.new_packet_received(seq)
         dump_packet_to_log_file(log_file, message, seq)
         
         # parse messages from the packet
@@ -38,7 +40,7 @@ def receive_packets():
                 break # skip this message and read the next packet
             data = message[HEADER_LENGTH:length + HEADER_LENGTH] # data bytes
             # debug.message_header(message_id, length, timestamp) # debug message
-            json_obj = parse_data(message_id, timestamp, length, data)
+            parse_data(message_id, timestamp, length, data)
             message = message [HEADER_LENGTH + length:] # go to next message 
 
 def dump_packet_to_log_file(log_file, message, seq):
@@ -46,6 +48,7 @@ def dump_packet_to_log_file(log_file, message, seq):
     log_file.write(delimiter.pack('SEQN', seq, len(message))) # add delimiter
     log_file.write(message)
     # TODO: need to figure out (define) delimiter format
+
 
 def data_sync():
     now_time = time.time() # in seconds, floating 
@@ -61,21 +64,42 @@ def data_sync():
     send_data_to_front_end_v2()
     
     data_sync.next_update_time += TIMEOUT # set new next time for data update
-    return data_sync.next_update_time - time.time()
+    return max(0, data_sync.next_update_time - time.time())
+        # prevent rare case of negative timeout
+        
 # initialize static variables at program start:
 data_sync.next_update_time = time.time() + TIMEOUT
 
 def send_data_to_front_end_v2():
-    if (no_packet_received()):
-        send_json_obj(json_ERRO('ERRO', 0, "no packet revceived"))
+    global stats
+    debug.clear_screen()
+    
+    # ADIS, prepare and send
+    if Messages.adis.counter > 0:
+        Messages.adis.add_other_fields()
+        send_json_obj(Messages.adis.data)
+        debug.print_ADIS(Messages.adis.data)
     else:
-        send_json_obj(check_before_send(parse_data.ADIS_mess, 'ADIS'))
-        send_json_obj(parse_data.last_GPS_mess)
-        send_json_obj(parse_data.last_MPL3_mess)
-        send_json_obj(parse_data.last_MPU9_mess)
-        send_json_obj(check_before_send(parse_data.last_ROLL_mess, 'ROLL'))
-    send_json_obj(check_before_send(parse_data.packet_analyze, 'Analyze'))
-    init_data()
+        print "ADIS: no data.\n\n\n\n\n"
+    
+    # ROLL, prepare and send
+    if Messages.roll.counter > 0:
+        Messages.roll.add_other_fields()
+        send_json_obj(Messages.roll.data)
+        debug.print_ROLL(Messages.roll.data)
+    else:
+        print "ROLL: no data.\n"
+        
+    # Send statistics
+    obj = stats.get()
+    send_json_obj(obj)
+        
+    # reset data for the next time chunk
+    Messages.adis.reset()
+    Messages.roll.reset()
+    stats.reset()
+    
+    print "\n", "time:", time.time(), "sec"
 
 if __name__ == "__main__":
     main()
