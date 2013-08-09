@@ -21,24 +21,9 @@ function TextWidget(_config) {
             // TODO bail if source does not cointain '.'
             var source = control.source.split('.');
             if (source[0] == jsonObject.fieldID) {
-                if (source[1] in jsonObject) {
-                    var value = eval('jsonObject.' + source[1]);
-                    
-                    var outUnits = '';
-                    
-                    if (typeof control.units != 'undefined') {
-                    	// TODO, make this work
-                      //var inUnits = unit[source[1]];
-                      outUnits = control.units;
-                      
-                      //var newValue = new Qty(value + 
-                      //var c = new Qty('1 m');
-                      //c = c.to('millim');
-                      
-                    }
-                    else if (source[1] in unit) { 
-                      outUnits = unit[source[1]]; 
-                    }
+                var field = source[1];
+                if (field in jsonObject) {
+                    var value = eval('jsonObject.' + field);
                     
                     // Check for the three built in config options for max, min & neg values
                     if (typeof source[2] != 'undefined') {
@@ -54,20 +39,40 @@ function TextWidget(_config) {
                             value = -value;
                         }
                     }
-                    self.put(control.label, value, outUnits);
+                    
+                    if (isFloat(value)) {
+                        value = value.toFixed(2);
+                    }
+                    else {
+                      value = value.toFixed(0);
+                    }
+                    
+                    // Convert to correct units
+                    // Currently all possible input units are looked up in scripts/units.js
+                    // Conversions are handled by scripts/quantities.js
+                    var outUnits = '';
+                    if (typeof control.units != 'undefined' && field in unit) {
+                      var inUnits = unit[field];
+                      outUnits = control.units;
+                      
+                      var newValue = new Qty(value + inUnits);
+                      value = newValue.to(outUnits);
+                      value = value.toPrec(0.01);
+                    }
+                    else if (field in unit) { 
+                      outUnits = unit[field];
+                      value = newValue.to(outUnits);
+                    }
+                    
+                    self.put(control.label, value);
                 }
             }
         });
     };
     
-    this.put = function(controlLabel, value, units) {
+    this.put = function(controlLabel, value) {
         if (value_labels[controlLabel]) {
-          if (isFloat(value)) {
-              value_labels[controlLabel] = value.toFixed(2) + ' ' + units;
-          }
-          else {
-            value_labels[controlLabel] = value.toFixed(0) + ' ' + units;
-          }
+          value_labels[controlLabel] = value;
         }
         newText = '<strong>' + config.id + '</strong>';
         jQuery.each(value_labels, function(label, value) {

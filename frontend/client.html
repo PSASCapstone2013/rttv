@@ -12,6 +12,7 @@
     <script src="scripts/d3.v2.js"></script>
     <script src="scripts/d3_func.js"></script>
     <script src="scripts/js-yaml.min.js"></script>
+    <script src="scripts/quantities.js"></script>
     <script src="scripts/units.js"></script>
     <script src="widgets/gauge.js"></script>
     <script src="widgets/line_graph.js"></script>
@@ -112,14 +113,11 @@
           if (received > 0) {
             var lost = json.PacketLost;
             var lostTotal = 0;
-            for (i=0; i<lost.length; i++) {
-              lostTotal += each[i].PacketsLost;
-            }
-            lostPercent = lostTotal / (received + lostTotal) * 100;
+            lostPercent = lost / (lost + received) * 100;
           }
           var connection = 'Connection is <ok>open</ok>'
             + '<br>Packets Received: ' + received
-            + '<br>Percent Loss: ' + lostPercent + '%'
+            + '<br>Percent Loss: ' + lostPercent.toFixed(0) + '%'
             + '<br>Last Packet Received: ' + json.latestPacketReceived;
           lockWidget.setText(connection);
         }

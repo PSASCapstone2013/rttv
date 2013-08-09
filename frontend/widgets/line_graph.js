@@ -67,8 +67,22 @@ function LineGraph(config) {
             // TODO bail if source does not cointain '.'
             var source = control.source.split('.');
             if (source[0] == jsonObject.fieldID) {
-                if (source[1] in jsonObject) {
-                    var value = eval('jsonObject.' + source[1]);
+            	  var field = source[1];
+                if (field in jsonObject) {
+                    var value = eval('jsonObject.' + field);
+                    
+                    // Convert to correct units
+                    var outUnits = '';
+                    if (typeof control.units != 'undefined' && field in unit) {
+                      var inUnits = unit[field];
+                      outUnits = control.units;
+                      if (inUnits != outUnits) {
+                        var newValue = new Qty(value + inUnits);
+                        value = newValue.to(outUnits);
+                        value = value.scalar;
+                      }
+                    }
+                    
                     self.put(control.label, value);
                 }
             }

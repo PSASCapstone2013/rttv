@@ -1,4 +1,5 @@
 ---
+# All possible units and unit conversions are outlined in scripts/quantities.js
 # Adding the suffix .Max or .Min to any JSON source will give you the maximum or minimum value over time.
 # Adding the suffix .Neg to any JSON source will negate the incoming value.
 
@@ -46,7 +47,7 @@
         units: m/s^2
       - label: Magnitude
         source: ADIS.AccelerometerMagn
-        units: m/s^2
+        units: gee
         
   - id: baz
     type: LineGraph

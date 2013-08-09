@@ -1,8 +1,7 @@
 var unit = new Array();
 
+// GPS
 unit['AgeOfDiff'] = 's';
-unit['NumOfSats'] = '';
-unit['GPSWeek'] = '';
 unit['GPSTimeOfWeek'] = 's';
 unit['Latitude'] = 'deg';
 unit['Longitude'] = 'deg';
@@ -11,8 +10,9 @@ unit['VNorth'] = 'm/s';
 unit['VEast'] = 'm/s';
 unit['Vup'] = 'm/s';
 unit['StdDevResid'] = 'm';
-unit['NavMode'] = '';
 unit['ExtendedAgeOfDiff'] = 's';
+
+// ADIS
 unit['PowerSupply'] = 'V';
 unit['GyroscopeX'] = 'deg/s';
 unit['GyroscopeY'] = 'deg/s';
