@@ -4,11 +4,10 @@ from processing import *
 from parsing import *
 from back_to_front import *
 
-stats = Stat()
+stats = Stats()
 
 # global objects for data processing
 def main():
-    stats = Stat()
     debug.open_logs()
     thread.start_new_thread(tornado_thread, (0,0))
     receive_packets()
@@ -35,6 +34,7 @@ def receive_packets():
         message = message[SEQUENCE_LENGTH:]
         while len(message) > HEADER_LENGTH: # end of data or truncated header
             message_id, timestamp, length = parse_message_header(message)
+            stats.recent_timestamp(timestamp)
             length = overwrite_length(message_id, length)
             if data_is_truncated(message, length):
                 break # skip this message and read the next packet
@@ -80,7 +80,7 @@ def send_data_to_front_end_v2():
         send_json_obj(Messages.adis.data)
         debug.print_ADIS(Messages.adis.data)
     else:
-        print "ADIS: no data.\n\n\n\n\n"
+        print "ADIS:  no data.\n\n\n\n\n"
     
     # ROLL, prepare and send
     if Messages.roll.counter > 0:
@@ -88,18 +88,20 @@ def send_data_to_front_end_v2():
         send_json_obj(Messages.roll.data)
         debug.print_ROLL(Messages.roll.data)
     else:
-        print "ROLL: no data.\n"
+        print "ROLL:  no data.\n"
         
     # Send statistics
     obj = stats.get()
-    send_json_obj(obj)
+    debug.print_stats(obj)
+    send_json_obj(obj)    
+    
         
     # reset data for the next time chunk
     Messages.adis.reset()
     Messages.roll.reset()
     stats.reset()
     
-    print "\n", "time:", time.time(), "sec"
+    print "\n", "time:  " + stats.get_current_time_string()
 
 if __name__ == "__main__":
     main()

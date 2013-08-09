@@ -24,21 +24,6 @@ def parse_sequence(message):
     #    print seq, "(0x%.4x)" % seq
     return seq
         
-def check_for_lost_packets(seq, last_seq,
-                           previous_packet_received, latest_packet_received):
-    packets_lost = seq - last_seq - 1
-    obj = {}
-    if packets_lost > 0:
-        # if DEBUG and not BAD_DEBUG_ONLY:
-        #     print packets_lost, "packets were lost between", \
-        #           last_seq, "and", seq
-        obj = { 
-            'From': previous_packet_received.strftime('%H%M%S%f'),
-            'To': latest_packet_received.strftime('%H%M%S%f'),
-            'PacketsLost': packets_lost
-        }
-    return obj
-
 def parse_message_header(message):
     message_id = message[FIELD_ID_OFFSET:TIMESTAMP_OFFSET]
     timestamp = int( \

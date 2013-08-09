@@ -163,33 +163,52 @@ class MESG(Message):
         }
         return obj
     
-class Stat():
-    id = 'Analyze'
-    packets_received_total = 0
+class Stats():
+    id = 'Stats'
     last_seq = sys.maxint # the sequence number of the very last packet
-    packets_lost_total = 0 # number of packets lost
+
+    packets_received_total = 0
+    packets_lost_total = 0
+    packets_received_recently = 0
+    packets_lost_recently = 0
+    most_recent_timestamp = 0
+    time_last_packet_received = 'never'
     
     def new_packet_received(self, seq):
         self.check_for_lost_packets(seq)
         self.last_seq = seq
         self.packets_received_total += 1
+        self.packets_received_recently += 1
+        self.time_last_packet_received = self.get_current_time_string()
+            
+    def get_current_time_string(self):
+        time_now = datetime.datetime.now()
+        return time_now.strftime("%H:%M:%S.") + time_now.strftime("%f")[0]
         
     def check_for_lost_packets(self, seq):
         difference = seq - self.last_seq
         if difference <= 1:
             return
-        self.packets_lost_total += seq - self.last_seq - 1
+        packets_lost_now = seq - self.last_seq - 1
+        self.packets_lost_total += packets_lost_now
+        self.packets_lost_recently += packets_lost_now
+        
+    def recent_timestamp(self, timestamp):
+        self.most_recent_timestamp = timestamp
         
     def reset(self):
-        # TODO: figure out which fields need to be reset
-        pass
+        self.packets_received_recently = 0
+        self.packets_lost_recently = 0
         
     def get(self):
         obj = {
-            'fieldID': 'Analyze',
-            'PacketReceived': self.packets_received_total,
-            'latestPacketReceived': self.last_seq,
-            'PacketLost': self.packets_lost_total,
+            'fieldID': 'Stats',
+            'PacketsReceivedTotal': self.packets_received_total,
+            'PacketsLostTotal': self.packets_lost_total,
+            'PacketsReceivedRecently': self.packets_received_recently,
+            'PacketsLostRecently': self.packets_lost_recently,
+            'MostRecentTimestamp': self.most_recent_timestamp,
+            'TimeLastPacketReceived': self.time_last_packet_received,
         }
         return obj
     

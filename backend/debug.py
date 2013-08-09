@@ -209,12 +209,12 @@ valid_ADIS.MIN_AUX_ADC       = 0.0     # Volts
 valid_ADIS.MAX_AUX_ADC       = 3.3     # Volts
 
 def print_ADIS(obj):
-    print ("ADIS: PowerSupply   %.1f V\n" +
-           "      Temperature   %.1f K\n" +
-           "      AuxiliaryADC  %.9f V\n" +
-           "      Gyroscope     %6.3f (%6.3f %6.3f %6.3f) deg/sec\n" +
-           "      Accelerometer %6.3f (%6.3f %6.3f %6.3f) m/s^2\n" +
-           "      Magnetometer  %9.6f (%9.6f %9.6f %9.6f) teslas") % \
+    print ("ADIS:  PowerSupply   %.1f V\n" +
+           "       Temperature   %.1f K\n" +
+           "       AuxiliaryADC  %.9f V\n" +
+           "       Gyroscope     %8.3f (%6.3f %6.3f %6.3f) deg/sec\n" +
+           "       Accelerometer %8.3f (%6.3f %6.3f %6.3f) m/s^2\n" +
+           "       Magnetometer  %8.6f (%9.6f %9.6f %9.6f) teslas") % \
        (obj['PowerSupply'], obj['Temperature'], obj['AuxiliaryADC'], \
         obj['GyroscopeMagn'], \
         obj['GyroscopeX'], obj['GyroscopeY'], obj['GyroscopeZ'], \
@@ -224,6 +224,20 @@ def print_ADIS(obj):
         obj['MagnetometerX'], obj['MagnetometerY'], obj['MagnetometerZ'])
         
 def print_ROLL(obj):
-    print ("ROLL: finPosition      %6.3f sec\n" +
-           "      rollServoDisable %6.3f of truth") % \
+    print ("ROLL:  finPosition      %6.3f sec\n" +
+           "       rollServoDisable %6.3f of truth") % \
           (obj['finPosition'], obj['rollServoDisable'])
+          
+def print_stats(obj):
+    print ("Stats: PacketsReceivedTotal     %d\n" +
+           "       PacketsLostTotal         %d\n" +
+           "       PacketsReceivedRecently  %d\n" +
+           "       PacketsLostRecently      %d\n" +
+           "       MostRecentTimestamp      %d ns\n" +
+           "       TimeLastPacketReceived   %s") % \
+          (obj['PacketsReceivedTotal'], \
+           obj['PacketsLostTotal'], \
+           obj['PacketsReceivedRecently'], \
+           obj['PacketsLostRecently'], \
+           obj['MostRecentTimestamp'], \
+           obj['TimeLastPacketReceived'])
