@@ -107,18 +107,17 @@
         
         // Parsing Analyze packet to show connection status.
         // Exists here since what we're displaying is beyond scope of config file.
-        if (json.fieldID == 'Analyze'){
-          var received = json.PacketReceived;
+        if (json.fieldID == 'Stats'){
+          var received = json.PacketsReceivedRecently;
           var lostPercent = 0;
-          if (received > 0) {
-            var lost = json.PacketLost;
-            var lostTotal = 0;
-            lostPercent = lost / (lost + received) * 100;
-          }
+          var receivedTotal = json.PacketsReceivedTotal;
+          var lostTotal = json.PacketsLostTotal;
+          lostPercent = lostTotal / (lostTotal + receivedTotal) * 100;
+          
           var connection = 'Connection is <ok>open</ok>'
-            + '<br>Packets Received: ' + received
-            + '<br>Percent Loss: ' + lostPercent.toFixed(0) + '%'
-            + '<br>Last Packet Received: ' + json.latestPacketReceived;
+            + '<br>Packets Incoming: ' + received
+            + '<br>Cumulative Percent Loss: ' + lostPercent.toFixed(0) + '%'
+            + '<br>Last Packet Rcvd: ' + json.TimeLastPacketReceived;
           lockWidget.setText(connection);
         }
         
