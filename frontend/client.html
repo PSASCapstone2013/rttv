@@ -35,7 +35,7 @@
      var fileIn = LoadFile('http://webserver/frontend/configs/test_config.yml'); */
   var configs = jsyaml.load(fileIn);
   
-  var lockWidget = new TextWidget({id: 'lock'});
+  var lockWidget = new TextWidget({id: 'lock', controls: []});
   
   var makeWidget = function(config) {
     switch(config.type) {
@@ -102,7 +102,6 @@
         if (json.fieldID != undefined) {
           widgets.forEach(function(widget) {
             widget.putJSON(json);
-            widget.draw();
           });
         }
         

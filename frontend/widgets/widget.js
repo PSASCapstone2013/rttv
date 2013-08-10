@@ -1,46 +1,49 @@
 function Widget (config) {
     this.config = config;
-    this.minVal = 10000000.0;
-    this.maxVal = -10000000.0;
+
+    this.config.controls.forEach(function(control) {
+        var source = control.source.split('.');
+        control.fieldID = source[0];
+        control.field = source[1];
+        control.valueTransformType = source[2]; // this can be 'undefined', but that's handled in transformValue()
+        control.minValue = Number.MAX_VALUE;
+        control.maxValue = Number.MIN_VALUE;
+        control.value = 0;
+        if (typeof control.units == 'undefined') {
+            // ensure control.units is defined. if we can't find an appropriate unit, make it empty
+            control.units = (control.field in unit) ? unit[control.field] : '';
+        }
+    });
 
     $('.container').append("<div class=\"widget " + this.config.id + "\" id=\"widget " + this.config.id + "\"></div>");
+    this.div = document.getElementById('widget ' + this.config.id);
+
+    var self = this;
 }
 
 Widget.prototype = {
     putJSON: function(jsonObject) {
         var self = this;
         this.config.controls.forEach(function(control) {
-            // TODO bail if source does not cointain '.'
-            var source = control.source.split('.');
-            if (source[0] == jsonObject.fieldID) {
-                var field = source[1];
-                if (field in jsonObject) {
-                    var value = eval('jsonObject.' + field);
-                    // Check for the three built in config options for max, min & neg values
-                    value = self.transformValue(source[2], value);
-                    value = self.isFloat(value) ? value.toFixed(2) : value.toFixed(0);
-
-                    // Convert to correct units
-                    // Currently all possible input units are looked up in scripts/units.js
-                    // Conversions are handled by scripts/quantities.js
-                    if (field in unit) {
-                        var outUnits = '';
-                        var inUnits = unit[field];
-                        var newValue = new Qty(value + ' ' + inUnits);
-                        if (typeof control.units != 'undefined') {
-                          outUnits = control.units;
-                          value = newValue.to(outUnits);
-                          value = value.toPrec(0.01);
-                        } else {
-                          outUnits = unit[field];
-                          value = newValue.to(outUnits);
-                      }
-                    }
-                    self.put(control.label, value);
+            if (control.fieldID == jsonObject.fieldID && control.field in jsonObject) {
+                control.value = eval('jsonObject.' + control.field);
+                control.value = self.transformValue(control);
+                // Convert to correct units
+                // Currently all possible input units are looked up in scripts/units.js
+                // Conversions are handled by scripts/quantities.js
+                if (control.field in unit && unit[control.field] != control.units) {
+                    control.value = new Qty(control.value + ' ' + unit[control.field]).to(control.units).toPrec(0.01).scalar;
                 }
+                control.value = self.isFloat(control.value) ? control.value.toFixed(2) : control.value.toFixed(0);
+
+                self.onControlChanged(control);
             }
         });
+        self.draw();
     },
+
+    draw: function() {}, // abstract
+    onControlChanged: function(control) {}, // abstract
 
     /*
     * Transform types aappended to sources in the Yaml config file.
@@ -52,21 +55,21 @@ Widget.prototype = {
     *_______________________________
     * Valid modifiers are: 'Max', 'Min' and 'Neg'
     */
-    transformValue: function(transformType, value) {
-        if (typeof transformType == 'undefined') {
-            return value;
+    transformValue: function(control) {
+        if (typeof control.valueTransformType == 'undefined') {
+            return control.value;
         }
-        switch(transformType) {
+        switch(control.valueTransformType) {
             case 'Max':
-            this.maxVal = Math.max(value, this.maxVal);
-            return this.maxVal;
+            control.maxValue = Math.max(control.value, control.maxValue);
+            return control.maxValue;
             case 'Min':
-            this.minVal = Math.min(value, this.minVal);
-            return this.minVal;
+            control.minValue = Math.min(control.value, control.minValue);
+            return control.minValue;
             case 'Neg':
-            return -value;
+            return -control.value;
             default:
-            return value;
+            return control.value;
         }
     },
 

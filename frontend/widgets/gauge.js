@@ -1,7 +1,5 @@
 function Gauge(config) {
     Widget.call(this, config);
-    var self = this;
-    self.value = 0;
 
     this.config.labelTextConfig = {
         size: Math.round(this.config.size / 9),
@@ -24,8 +22,8 @@ function Gauge(config) {
     this.config.max = this.config.max || 100;
     this.config.range = this.config.max - this.config.min;
 
-    this.config.majorTicks = this.config.majorTicks || 5;
-    this.config.minorTicks = this.config.minorTicks || 2;
+    this.config.numMajorTicks = this.config.numMajorTicks || 5;
+    this.config.numMinorTicks = this.config.numMinorTicks || 2;
 
     this.config.greenColor  = "#109618";
     this.config.yellowColor = "#FF9900";
@@ -68,30 +66,29 @@ function Gauge(config) {
 
         this.appendText(svg, this.config.label, this.config.labelTextConfig);
 
-        var majorDelta = this.config.range / (this.config.majorTicks - 1);
+        var majorDelta = this.config.range / (this.config.numMajorTicks - 1);
         for (var major = this.config.min; major <= this.config.max; major += majorDelta) {
-            var minorDelta = majorDelta / this.config.minorTicks;
+            var minorDelta = majorDelta / this.config.numMinorTicks;
+            var points = [];
             for (var minor = major + minorDelta; minor < Math.min(major + majorDelta, this.config.max); minor += minorDelta) {
-                var point1 = self.valueToPoint(minor, 0.75);
-                var point2 = self.valueToPoint(minor, 0.85);
+                points = [self.valueToPoint(minor, 0.75), self.valueToPoint(minor, 0.85)];
 
                 svg.append("line")
-                .attr("x1", point1.x)
-                .attr("y1", point1.y)
-                .attr("x2", point2.x)
-                .attr("y2", point2.y)
+                .attr("x1", points[0].x)
+                .attr("y1", points[0].y)
+                .attr("x2", points[1].x)
+                .attr("y2", points[1].y)
                 .style("stroke", "#666")
                 .style("stroke-width", "1px");
             }
 
-            var point1 = self.valueToPoint(major, 0.7);
-            var point2 = self.valueToPoint(major, 0.85);
+            points = [self.valueToPoint(major, 0.7), self.valueToPoint(major, 0.85)];
 
             svg.append("line")
-            .attr("x1", point1.x)
-            .attr("y1", point1.y)
-            .attr("x2", point2.x)
-            .attr("y2", point2.y)
+            .attr("x1", points[0].x)
+            .attr("y1", points[0].y)
+            .attr("x2", points[1].x)
+            .attr("y2", points[1].y)
             .style("stroke", "#333")
             .style("stroke-width", "2px");
 
@@ -110,7 +107,6 @@ function Gauge(config) {
 
         var pointerContainer = svg.append("g").attr("class", "pointerContainer");
 
-        self.drawPointer(self.value);
         pointerContainer.append("circle")
         .attr("cx", this.config.size / 2)
         .attr("cy", this.config.size / 2)
@@ -118,14 +114,12 @@ function Gauge(config) {
         .style("fill", "#4684EE")
         .style("stroke", "#666")
         .style("opacity", 1);
-    };
 
-    this.put = function(controlName, value) {
-        self.value = value;
+        self.draw();
     };
 
     this.draw = function() {
-        self.drawPointer(self.value);
+        self.drawPointer(this.config.controls[0].value);
     };
 
     this.drawBand = function(start, end, color) {
@@ -134,11 +128,11 @@ function Gauge(config) {
         svg.append("path")
         .style("fill", color)
         .attr("d", d3.svg.arc()
-            .startAngle(self.valueToRadians(start))
-            .endAngle(self.valueToRadians(end))
+            .startAngle(this.valueToRadians(start))
+            .endAngle(this.valueToRadians(end))
             .innerRadius(0.65 * this.config.radius)
             .outerRadius(0.85 * this.config.radius))
-        .attr("transform", function() { return "translate(" + self.config.size / 2 + ", " + self.config.size / 2 + ") rotate(270)"; });
+        .attr("transform", function() { return "translate(" + this.config.size / 2 + ", " + this.config.size / 2 + ") rotate(270)"; });
     };
 
     this.drawPointer = function(value) {
@@ -187,7 +181,7 @@ function Gauge(config) {
     };
 
     this.valueToRadians = function(value) {
-        return self.valueToDegrees(value) * Math.PI / 180;
+        return this.valueToDegrees(value) * Math.PI / 180;
     };
 
     this.valueToPoint = function(value, factor) {
@@ -211,7 +205,7 @@ function Gauge(config) {
             .style("stroke-width", "0px");
     };
 
-    self.render();
+    this.render();
 }
 
 Gauge.prototype = Object.create(Widget.prototype, {constructor: {value: Gauge, enumerable: false, writable: true, configurable: true}});

@@ -4,36 +4,17 @@ function TextWidget(config) {
     $('.container').append("<script type=\"text/javascript\">document.getElementById('widget " + this.config.id + "').style.width=\"" + this.config.width + "px\";</script>");
     $('.container').append("<script type=\"text/javascript\">document.getElementById('widget " + this.config.id + "').style.height=\"" + this.config.height + "px\";</script>");
 
-    var text = "",
-        value_labels = {},
-        divElement = document.getElementById('widget ' + this.config.id);
-
-    if (this.config.controls) {
+    this.onControlChanged = function(control) {
+        var text = '<strong>' + config.id + '</strong>';
         this.config.controls.forEach(function(control) {
-            value_labels[control.label] = ' ';
+            text += "<br>";
+            text += control.label + ': ' + control.value + ' ' + control.units;
         });
-    }
-
-    this.put = function(controlLabel, value) {
-        if (value_labels[controlLabel]) {
-          value_labels[controlLabel] = value;
-        }
-        newText = '<strong>' + config.id + '</strong>';
-        jQuery.each(value_labels, function(label, value) {
-            newText += "<br>";
-            newText += label + ': ';
-            newText += value;
-        });
-        this.setText(newText);
+        this.setText(text);
     };
 
-    this.setText = function(_text) {
-        text = _text;
-        divElement.innerHTML = text;
-    };
-
-    this.draw = function() {
-
+    this.setText = function(text) {
+        this.div.innerHTML = text;
     };
 }
 

@@ -60,11 +60,11 @@ function LineGraph(config) {
         .style("text-anchor", "middle")
         .text(yAxisLabel + ' (' + yAxisUnits + ')');
 
-    this.put = function(controlName, value) {
+    this.onControlChanged = function(control) {
         // pop the old data point off the front
         // data.pop();
 
-        data.unshift(value.scalar);
+        data.unshift(control.value);
 
         // "scale" (widen) domain until we reach the specified max-datapoints to have on the graph,
         // then start "translating" (keeping domain width, but tracking present data points)
@@ -73,8 +73,8 @@ function LineGraph(config) {
             xDomain[0] = xDomain[1] - maxDataSize;
         }
         // y-domain should contain all data points.
-        yDomain[0] = Math.min(value.scalar, yDomain[0]);
-        yDomain[1] = Math.max(value.scalar, yDomain[1]);
+        yDomain[0] = Math.min(control.value, yDomain[0]);
+        yDomain[1] = Math.max(control.value, yDomain[1]);
 
         // remap to new x/y domains
         mapX.domain(xDomain);
