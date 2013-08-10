@@ -35,10 +35,6 @@ function TextWidget(config) {
     this.draw = function() {
 
     };
-
-    function isFloat(n) {
-      return typeof n === 'number' && n % 1 !== 0;
-    }
 }
 
 TextWidget.prototype = Object.create(Widget.prototype, {constructor: {value: TextWidget, enumerable: false, writable: true, configurable: true}});

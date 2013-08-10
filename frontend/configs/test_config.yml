@@ -49,7 +49,7 @@
         source: ADIS.AccelerometerMagn
         units: gee
         
-  - id: baz
+  - id: Z-Roll
     type: LineGraph
     width: 600
     height: 320

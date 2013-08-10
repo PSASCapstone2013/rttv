@@ -6,6 +6,7 @@ function LineGraph(config) {
         data = zeros(0),
         xAxisLabel = this.config.xAxisLabel || 'X',
         yAxisLabel = this.config.controls[0].label || 'Y',
+        yAxisUnits = this.config.controls[0].units || '',
         labelMargin = {top: 10, right: 10, bottom: 20, left: 60},
         // default to 0 x/y domain, auto-scale as new data comes in
         xDomain = [0, 0],
@@ -57,13 +58,13 @@ function LineGraph(config) {
         .attr("x", -this.config.height / 2)
         .attr("dy", "1em")
         .style("text-anchor", "middle")
-        .text(yAxisLabel);
+        .text(yAxisLabel + ' (' + yAxisUnits + ')');
 
     this.put = function(controlName, value) {
         // pop the old data point off the front
         // data.pop();
 
-        data.unshift(value);
+        data.unshift(value.scalar);
 
         // "scale" (widen) domain until we reach the specified max-datapoints to have on the graph,
         // then start "translating" (keeping domain width, but tracking present data points)
@@ -72,8 +73,8 @@ function LineGraph(config) {
             xDomain[0] = xDomain[1] - maxDataSize;
         }
         // y-domain should contain all data points.
-        yDomain[0] = Math.min(value, yDomain[0]);
-        yDomain[1] = Math.max(value, yDomain[1]);
+        yDomain[0] = Math.min(value.scalar, yDomain[0]);
+        yDomain[1] = Math.max(value.scalar, yDomain[1]);
 
         // remap to new x/y domains
         mapX.domain(xDomain);
