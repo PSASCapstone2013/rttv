@@ -1,0 +1,80 @@
+---
+# All possible units and unit conversions are outlined in scripts/quantities.js
+# Adding the suffix .Max or .Min to any JSON source will give you the maximum or minimum value over time.
+# Adding the suffix .Neg to any JSON source will negate the incoming value.
+
+  - id: Acceleration
+    type: Text
+    width: 200
+    height: 150
+    controls:
+      - label: X
+        source: ADIS.AccelerometerX
+        units: m/s^2
+      - label: Y
+        source: ADIS.AccelerometerY
+        units: m/s^2
+      - label: Z
+        source: ADIS.AccelerometerZ
+        units: m/s^2
+      - label: Magnitude
+        source: ADIS.AccelerometerMagn
+        units: gee
+
+  - id: Gyroscrope
+    type: Text
+    width: 200
+    height: 150
+    controls:
+      - label: X
+        source: ADIS.GyroscopeX
+        units: deg/sec
+      - label: Y
+        source: ADIS.GyroscopeY
+        units: deg/sec
+      - label: Z
+        source: ADIS.GyroscopeZ
+        units: deg/sec
+      - label: Magnitude
+        source: ADIS.GyroscopeMagn
+        units: deg/sec
+        
+  - id: Magnetometer
+    type: Text
+    width: 200
+    height: 150
+    controls:
+      - label: X
+        source: ADIS.MagnetometerX
+        units: T
+      - label: Y
+        source: ADIS.MagnetometerY
+        units: T
+      - label: Z
+        source: ADIS.MagnetometerZ
+        units: T
+      - label: Magnitude
+        source: ADIS.MagnetometerMagn
+        units: gauss
+        
+  - id: Temp/ADC
+    type: Text
+    width: 200
+    height: 150
+    controls:
+      - label: Temperature
+        source: ADIS.Temperature
+        units: kelvin
+      - label: Auxiliary ADC
+        source: ADIS.AuxiliaryADC
+        units: V
+        
+  - id: Z-Roll
+    type: LineGraph
+    width: 600
+    height: 320
+    maxDataSize: 200
+    controls:
+      - label: Z Roll
+        source: ADIS.GyroscopeX
+        units: deg/sec

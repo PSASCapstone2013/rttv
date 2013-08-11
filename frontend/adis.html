@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+
+    <title>PSAS - Real Time Telemetry Visualization</title>
+
+    <link rel="stylesheet" type="text/css" media="screen" href="css/masonry.css"/>
+
+    <script src="scripts/jquery.min.js"></script>
+    <script src="scripts/masonry.pkgd.min.js"></script>
+    <script src="scripts/d3.v2.js"></script>
+    <script src="scripts/d3_func.js"></script>
+    <script src="scripts/js-yaml.min.js"></script>
+    <script src="scripts/quantities.js"></script>
+    <script src="scripts/units.js"></script>
+    <script src="widgets/widget.js"></script>
+    <script src="widgets/gauge.js"></script>
+    <script src="widgets/line_graph.js"></script>
+    <script src="widgets/text_widget.js"></script>
+  </head>
+
+  <body>
+    <div class="container"/>
+  </body>
+
+</html>
+
+<script>
+  // Load the yaml config file
+  /* Right now it will only work on firefox, at least my version, since we're directly accessing the file.
+     You can open in chrome with the switch "--allow-file-access-from-files" as well.
+     It'll need updated to something like this once the http server is set up:
+     var fileIn = LoadFile('http://webserver/frontend/configs/adis_config.yml'); */
+  var fileIn = LoadFile('configs/adis_config.yml');
+  var configs = jsyaml.load(fileIn);
+  
+  var lockWidget = new TextWidget({id: 'lock', position: 'left', controls: []});
+  
+  var makeWidget = function(config) {
+    switch(config.type) {
+      case 'Text':
+      return new TextWidget(config);
+      case 'LineGraph':
+      return new LineGraph(config);
+      case 'Gauge':
+      return new Gauge(config);
+      default:
+      return null;
+    }
+  }
+  
+  widgets = [];
+  for (var i = 0; i < configs.length; i++) {
+    var widget = makeWidget(configs[i]);
+    if (widget != null) {
+      widgets.push(widget);
+    }
+  };
+  
+  function LoadFile(pathOfFileToRead){
+    var request = new XMLHttpRequest();
+    request.open("GET", pathOfFileToRead, false);
+    request.send(null);
+    var contentsOfFileAsString = request.responseText;
+  
+    return contentsOfFileAsString;
+  }
+</script>
+
+<script>
+  // Masonry
+  docReady(function() {
+    var container = document.querySelector('.container');
+    var msnry = new Masonry( container, { columnWidth: 50 });
+  });
+</script>
+
+<script>
+  // Websocket
+  $(function () {  
+    // if user is running mozilla then use it's built-in WebSocket
+    window.WebSocket = window.WebSocket || window.MozWebSocket;
+    var connection = new WebSocket('ws://localhost:8080');
+    
+    connection.onopen = function () {
+      connection.send('Client Connected');
+      lockWidget.setText('Connection is <ok>open</ok>');
+    };
+    connection.onerror = function (error) {
+      lockWidget.setText('Connection is <ohno>closed</ohno>.');
+    };
+    connection.onclose = function () {
+      lockWidget.setText('Connection is <ohno>closed</ohno>.');
+    };
+    
+    connection.onmessage = function (message) {
+      // try to decode json (this script assumes that each message from the server is json)
+      try {
+        var json = JSON.parse(message.data);
+        
+        if (json.fieldID != undefined) {
+          widgets.forEach(function(widget) {
+            widget.putJSON(json);
+            widget.draw();
+          });
+        }
+        
+        // Parsing Analyze packet to show connection status.
+        // Exists here since what we're displaying is beyond scope of config file.
+        if (json.fieldID == 'Stats'){
+          var received = json.PacketsReceivedRecently;
+          var lostPercent = 0;
+          var receivedTotal = json.PacketsReceivedTotal;
+          var lostTotal = json.PacketsLostTotal;
+          lostPercent = lostTotal / (lostTotal + receivedTotal) * 100;
+          
+          var connection = 'Connection is <ok>open</ok>'
+            + '<br>Packets Incoming: ' + received
+            + '<br>Cumulative Percent Loss: ' + lostPercent.toFixed(0) + '%'
+            + '<br>Last Packet Rcvd: ' + json.TimeLastPacketReceived;
+          lockWidget.setText(connection);
+        }
+        
+      } catch (e) {
+        console.log(e.toString());
+        return;
+      }
+    };
+  });
+</script>
