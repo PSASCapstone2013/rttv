@@ -69,4 +69,4 @@ You are able to specify what widgets you want to see and what data those widgets
 ## Unit conversion
 
 All data being sent by the Back-end is in MKS units.  To handle converting units we use the library js-quantities (https://github.com/gentooboontoo/js-quantities).  The library contains a list of all the available units and their aliases and is located at scripts/quantities.js.  If you try to use a unit or unit conversion not supported your data will not display.
-Right now the Back-end does not send the units in the JSON object so the incoming units for each field are kept in the file scripts/units.js.  If the units sent by the backend change or additional data is send that file will need to be updated.
+Right now the Back-end does not send the units in the JSON object so the incoming units for each field are kept in the file scripts/units.js.  If the units sent by the backend changes or additional data added that file will need to be updated.
