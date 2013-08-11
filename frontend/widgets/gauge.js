@@ -1,6 +1,6 @@
 function Gauge(config) {
     Widget.call(this, config);
-
+    var self = this;
     this.config.labelTextConfig = {
         size: Math.round(this.config.size / 9),
         x: this.config.size / 2,
@@ -132,7 +132,7 @@ function Gauge(config) {
             .endAngle(this.valueToRadians(end))
             .innerRadius(0.65 * this.config.radius)
             .outerRadius(0.85 * this.config.radius))
-        .attr("transform", function() { return "translate(" + this.config.size / 2 + ", " + this.config.size / 2 + ") rotate(270)"; });
+        .attr("transform", function() { return "translate(" + self.config.size / 2 + ", " + self.config.size / 2 + ") rotate(270)"; });
     };
 
     this.drawPointer = function(value) {

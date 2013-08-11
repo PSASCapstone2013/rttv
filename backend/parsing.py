@@ -2,12 +2,15 @@
 from config import *
 from processing import *
 from back_to_front import *
+import socket
+
 
 def init_socket():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((IP_ADDRESS, PORT))
     sock.settimeout(TIMEOUT)
     return sock
+
 
 def receive_packet(sock):
     # receive packet
@@ -17,25 +20,26 @@ def receive_packet(sock):
     except socket.timeout:
         return ''
 
+
 def parse_sequence(message):
     # get and check packet sequence number
     seq = int(message[0:SEQUENCE_LENGTH].encode('hex'), 16)
     # if DEBUG and not BAD_DEBUG_ONLY:
     #    print seq, "(0x%.4x)" % seq
     return seq
-        
+
+
 def parse_message_header(message):
     message_id = message[FIELD_ID_OFFSET:TIMESTAMP_OFFSET]
-    timestamp = int( \
-        message[TIMESTAMP_OFFSET:DATA_LENGTH_OFFSET].encode('hex'), 16)
-    length = int( \
-        message[DATA_LENGTH_OFFSET:DATA_OFFSET].encode('hex'), 16)
+    timestamp = int(message[TIMESTAMP_OFFSET:DATA_LENGTH_OFFSET].encode('hex'), 16)
+    length = int(message[DATA_LENGTH_OFFSET:DATA_OFFSET].encode('hex'), 16)
     # print message_id, FIELD_ID_OFFSET, TIMESTAMP_OFFSET
     # print timestamp, TIMESTAMP_OFFSET, DATA_LENGTH_OFFSET
     # print length, DATA_LENGTH_OFFSET, DATA_OFFSET
     # exit()
-    return message_id,timestamp, length
-    
+    return message_id, timestamp, length
+
+
 def overwrite_length(message_id, length):
     # workaround for wrong data length in ADIS header
     if message_id == 'ADIS':
@@ -43,9 +47,10 @@ def overwrite_length(message_id, length):
         new_length = format.size
         return new_length
     return length
-    
+
+
 def data_is_truncated(message, length_expected):
-    if len(message) < length_expected + HEADER_LENGTH: # truncated message data
+    if len(message) < length_expected + HEADER_LENGTH:  # truncated message data
         # sys.stdout.write('t')
         return True
     return False
@@ -53,15 +58,15 @@ def data_is_truncated(message, length_expected):
 
 def parse_data(message_id, timestamp, length, data):
     if message_id == 'SEQN':
-        return # skip
-        
-    if message_id == 'ERRO': # data contains a string message
+        return  # skip
+
+    if message_id == 'ERRO':  # data contains a string message
         print "ERRO:\"" + data + "\""
         obj = ERRO().convert(timestamp, data)
         send_json_obj(obj)
         return
-        
-    if message_id == 'MESG': # data contains a string message
+
+    if message_id == 'MESG':  # data contains a string message
         print "MESG:\"" + data + "\""
         obj = MESG().convert(timestamp, data)
         send_json_obj(obj)
@@ -69,9 +74,9 @@ def parse_data(message_id, timestamp, length, data):
 
     # parse messages containing flight data
     format = message_type.get(message_id)
-    if format == None or len(data) <> format.size: # validate data format
+    if format is None or len(data) != format.size:  # validate data format
         debug.parsing_message("Warning: unable to parse message " + message_id)
-        return # skip this message
+        return  # skip this message
     # parse date into python tuple containing message fields
     parsed_data = format.unpack(data)
 
@@ -87,6 +92,6 @@ def parse_data(message_id, timestamp, length, data):
         obj = Messages.roll.convert(parsed_data)
         Messages.roll.average(obj)
         return
-            
+
     # TODO: GPS1 parsing/processing when actual data is available for testing
     # TODO: MPL3 parsing/processing when PSAS makes it ready
