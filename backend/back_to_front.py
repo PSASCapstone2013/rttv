@@ -29,8 +29,35 @@ class FrontEndWebSocket(tornado.websocket.WebSocketHandler):
         open_web_sockets.pop(self.list_position)
         open_web_sockets_lock.release()
 
+
+class ConfigFileHandler(tornado.web.RequestHandler):
+
+    root = 'config/'
+    ext = 'yml'
+    resource_regex = r'/' + root + '(.*)\.' + ext
+
+    def get(self, file_name):
+        try:
+            config_file = open(self.full_path(file_name), 'r')
+        except IOError:
+            self.write('No config file found at \"' + self.full_path(file_name) + '\"')
+            return
+
+        for line in config_file:
+            self.write(line + '<br>')
+
+        config_file.close()
+
+    def post(self, file_name):
+        self.write("Posting " + self.full_path(file_name))
+
+    def full_path(self, file_name):
+        return self.root + file_name + '.' + self.ext
+
+
 application = tornado.web.Application([
-    (r"/", FrontEndWebSocket),
+    (r'/', FrontEndWebSocket),
+    (ConfigFileHandler.resource_regex, ConfigFileHandler)
 ])
 
 

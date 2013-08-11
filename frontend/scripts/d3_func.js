@@ -1,5 +1,5 @@
 var color = d3.scale.category10();
-  
+
 function Path(svg, data, generatorName, generatorFunction) {
 
     var path = svg.append("g")
@@ -19,10 +19,4 @@ function Path(svg, data, generatorName, generatorFunction) {
 
 function zeros(size) {
     return d3.range(size).map(function() { return 0; });
-}
-
-function tick() {
-  widgets.forEach(function(widget) {
-    widget.draw();
-  });
 }
