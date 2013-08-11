@@ -3,8 +3,8 @@ import thread
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
-import tornado.httpserver
 import json
+import os
 
 open_web_sockets = []  # an array of open websocket connections
 open_web_sockets_lock = thread.allocate_lock()  # lock used when accessing the
@@ -30,35 +30,17 @@ class FrontEndWebSocket(tornado.websocket.WebSocketHandler):
         open_web_sockets_lock.release()
 
 
-class ConfigFileHandler(tornado.web.RequestHandler):
+class MainHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render('client.html')
 
-    root = 'config/'
-    ext = 'yml'
-    resource_regex = r'/' + root + '(.*)\.' + ext
-
-    def get(self, file_name):
-        try:
-            config_file = open(self.full_path(file_name), 'r')
-        except IOError:
-            self.write('No config file found at \"' + self.full_path(file_name) + '\"')
-            return
-
-        for line in config_file:
-            self.write(line + '<br>')
-
-        config_file.close()
-
-    def post(self, file_name):
-        self.write("Posting " + self.full_path(file_name))
-
-    def full_path(self, file_name):
-        return self.root + file_name + '.' + self.ext
-
+static_path = os.path.join(os.path.dirname(__file__), 'static')
 
 application = tornado.web.Application([
-    (r'/', FrontEndWebSocket),
-    (ConfigFileHandler.resource_regex, ConfigFileHandler)
-])
+    (r'/', MainHandler),
+    (r'/ws', FrontEndWebSocket),
+    (r'/(.*)', tornado.web.StaticFileHandler, dict(path=static_path)),
+], template_path=static_path, static_path=static_path)
 
 
 def tornado_thread(arg1, arg2):  # defines a thread that runs a Tornado IO loop
