@@ -3,7 +3,7 @@ from config import *
 from processing import *
 from parsing import *
 #from back_to_front import *
-from broacaster import *
+from  broadcaster import *
 
 stats = Stats()
 
@@ -78,7 +78,7 @@ def send_data_to_front_end_v2():
     # ADIS, prepare and send
     if Messages.adis.counter > 0:
         Messages.adis.add_other_fields()
-        broadcaster(Messages.adis.data) #new tornado function
+        broadcast(Messages.adis.data) #new tornado function
         debug.print_ADIS(Messages.adis.data)
     else:
         print "ADIS:  no data.\n\n\n\n\n"
@@ -86,7 +86,7 @@ def send_data_to_front_end_v2():
     # ROLL, prepare and send
     if Messages.roll.counter > 0:
         Messages.roll.add_other_fields()
-        broacaster(Messages.roll.data) #new tornado function
+        broadcast(Messages.roll.data) #new tornado function
         debug.print_ROLL(Messages.roll.data)
     else:
         print "ROLL:  no data.\n"
@@ -94,7 +94,7 @@ def send_data_to_front_end_v2():
     # Send statistics
     obj = stats.get()
     debug.print_stats(obj)
-    broadcaster(obj) #new tornado function
+    Broadcaster.broadcast(obj) #new tornado function
     
         
     # reset data for the next time chunk

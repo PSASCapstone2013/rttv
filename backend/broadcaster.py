@@ -14,7 +14,7 @@ class Broadcaster(object):
     
     @staticmethod
     def broadcast(data):
-        b = get_instance()
+        b = Broadcaster.get_instance()
         for s in b._clients:
             Broadcaster.write_message(s,data)
     
