@@ -3,11 +3,7 @@ from config import *
 from processing import *
 from parsing import *
 #from back_to_front import *
-<<<<<<< HEAD
 from  broadcaster import *
-=======
-from broadcaster import *
->>>>>>> cb247b50bc05e4873d4831e25b8c815496b17c8a
 
 stats = Stats()
 
@@ -82,7 +78,7 @@ def send_data_to_front_end_v2():
     # ADIS, prepare and send
     if Messages.adis.counter > 0:
         Messages.adis.add_other_fields()
-        broadcast(Messages.adis.data) #new tornado function
+        Broadcaster.broadcast(Messages.adis.data) #new tornado function
         debug.print_ADIS(Messages.adis.data)
     else:
         print "ADIS:  no data.\n\n\n\n\n"
@@ -90,11 +86,7 @@ def send_data_to_front_end_v2():
     # ROLL, prepare and send
     if Messages.roll.counter > 0:
         Messages.roll.add_other_fields()
-<<<<<<< HEAD
-        broadcast(Messages.roll.data) #new tornado function
-=======
-        broadcaster(Messages.roll.data) #new tornado function
->>>>>>> cb247b50bc05e4873d4831e25b8c815496b17c8a
+        Broadcaster.broadcast(Messages.roll.data) #new tornado function
         debug.print_ROLL(Messages.roll.data)
     else:
         print "ROLL:  no data.\n"
