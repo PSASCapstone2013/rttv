@@ -29,7 +29,7 @@ DATA_LENGTH_OFFSET = TIMESTAMP_OFFSET + TIMESTAMP_LENGTH
 DATA_OFFSET = DATA_LENGTH_OFFSET + DATA_LENGTH_LENGTH
 
 # log filename format
-LOG_FILE_FORMAT = datetime.datetime.now().strftime("log_%Y.%m.%d_%H-%M-%S")
+LOG_FILE_FORMAT = datetime.datetime.now().strftime("log/log_%Y.%m.%d_%H-%M-%S")
 
 # units conversion
 MILLI = 0.001

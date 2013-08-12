@@ -27,52 +27,13 @@
 </html>
 
 <script>
-  // Load the yaml config file
-  var fileIn = LoadFile('/static/config/test_config.yml');
-  var configs = jsyaml.load(fileIn);
-  
-  var lockWidget = new TextWidget({id: 'lock', controls: []});
-  
-  var makeWidget = function(config) {
-    switch(config.type) {
-      case 'LineGraph':
-      return new LineGraph(config);
-      case 'Text':
-      return new TextWidget(config);
-      case 'Gauge':
-      return new Gauge(config);
-      default:
-      return null;
-    }
-  }
-  
-  widgets = [];
-  for (var i = 0; i < configs.length; i++) {
-    var widget = makeWidget(configs[i]);
-    if (widget != null) {
-      widgets.push(widget);
-    }
-  };
-  
-  function LoadFile(pathOfFileToRead){
-    var request = new XMLHttpRequest();
-    request.open("GET", pathOfFileToRead, false);
-    request.send(null);
-    var contentsOfFileAsString = request.responseText;
-  
-    return contentsOfFileAsString;
-  }
-</script>
 
-<script>
   // Masonry
   docReady(function() {
     var container = document.querySelector('.container');
     var msnry = new Masonry( container, { columnWidth: 50 });
   });
-</script>
 
-<script>
   // Websocket
   $(function () {  
     // if user is running mozilla then use it's built-in WebSocket
@@ -123,4 +84,44 @@
       }
     };
   });
+
+  function LoadFile(pathOfFileToRead){
+    var request = new XMLHttpRequest();
+    request.open("GET", pathOfFileToRead, false);
+    request.send(null);
+    var contentsOfFileAsString = request.responseText;
+  
+    return contentsOfFileAsString;
+  }
+
+  function loadConfigs() {
+    var param = /[&?]config=([^&]+)/.exec(location.search);
+    var fileName = '/static/config/' + (param ? param[1] : 'config.yml');
+    return jsyaml.load(LoadFile(fileName));
+  }
+  
+  function makeWidget(config) {
+    switch(config.type) {
+      case 'LineGraph':
+      return new LineGraph(config);
+      case 'Text':
+      return new TextWidget(config);
+      case 'Gauge':
+      return new Gauge(config);
+      default:
+      return null;
+    }
+  }
+
+  /******* initialized widgets from config file passed in the 'config' query string param *******/
+  var configs = loadConfigs();
+  var lockWidget = new TextWidget({id: 'lock', controls: []});
+    
+  widgets = [];
+  for (var i = 0; i < configs.length; i++) {
+    var widget = makeWidget(configs[i]);
+    if (widget != null) {
+      widgets.push(widget);
+    }
+  };
 </script>

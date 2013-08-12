@@ -8,9 +8,17 @@ When opened in a browser it initializes a WebSocket connection with client.py, w
 
 Once the rocket is sending data and the backend server is running, simply navigate to [http://localhost/8080](http://localhost/8080) to start seeing data.
 
-Currently there are two html files in the ```static``` resources directory:
-* **client.html** displays a mix of GPS and ADIS data that was requested for the prototype
-* **adis.html** displays all ADIS data
+#### Specifying the config file
+
+client.html loads the config file specified by the URL query string paramater ```config```.
+
+For example, ```http://localhost:8080/?config=test_config.yml``` would display data using the config file in ```static/config/test_config.yml```.
+
+If no config file is specified in the URL, the default is is ```config.yml```.
+
+Currently, there are two config files:
+* **config.yml** (default) displays a mix of GPS and ADIS data that was requested for the prototype
+* **adis_config.yml** displays all ADIS data
 
 ### Widgets
 
