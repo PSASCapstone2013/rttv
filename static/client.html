@@ -29,10 +29,6 @@
 <script>
   // Load the yaml config file
   var fileIn = LoadFile('/static/config/test_config.yml');
-  /* Right now it will only work on firefox, at least my version, since we're directly accessing the file.
-     You can open in chrome with the switch "--allow-file-access-from-files" as well.
-     It'll need updated to something like this once the http server is set up:
-     var fileIn = LoadFile('http://webserver/frontend/configs/test_config.yml'); */
   var configs = jsyaml.load(fileIn);
   
   var lockWidget = new TextWidget({id: 'lock', controls: []});

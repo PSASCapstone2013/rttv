@@ -5,19 +5,19 @@
 
     <title>PSAS - Real Time Telemetry Visualization</title>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="css/masonry.css"/>
+    <link rel="stylesheet" type="text/css" media="screen" href="/static/css/masonry.css"/>
 
-    <script src="scripts/jquery.min.js"></script>
-    <script src="scripts/masonry.pkgd.min.js"></script>
-    <script src="scripts/d3.v2.js"></script>
-    <script src="scripts/d3_func.js"></script>
-    <script src="scripts/js-yaml.min.js"></script>
-    <script src="scripts/quantities.js"></script>
-    <script src="scripts/units.js"></script>
-    <script src="widgets/widget.js"></script>
-    <script src="widgets/gauge.js"></script>
-    <script src="widgets/line_graph.js"></script>
-    <script src="widgets/text_widget.js"></script>
+    <script src="/static/scripts/jquery.min.js"></script>
+    <script src="/static/scripts/masonry.pkgd.min.js"></script>
+    <script src="/static/scripts/d3.v2.js"></script>
+    <script src="/static/scripts/d3_func.js"></script>
+    <script src="/static/scripts/js-yaml.min.js"></script>
+    <script src="/static/scripts/quantities.js"></script>
+    <script src="/static/scripts/units.js"></script>
+    <script src="/static/widgets/widget.js"></script>
+    <script src="/static/widgets/gauge.js"></script>
+    <script src="/static/widgets/line_graph.js"></script>
+    <script src="/static/widgets/text_widget.js"></script>
   </head>
 
   <body>
@@ -28,11 +28,7 @@
 
 <script>
   // Load the yaml config file
-  /* Right now it will only work on firefox, at least my version, since we're directly accessing the file.
-     You can open in chrome with the switch "--allow-file-access-from-files" as well.
-     It'll need updated to something like this once the http server is set up:
-     var fileIn = LoadFile('http://webserver/frontend/configs/adis_config.yml'); */
-  var fileIn = LoadFile('configs/adis_config.yml');
+  var fileIn = LoadFile('/static/config/adis_config.yml');
   var configs = jsyaml.load(fileIn);
   
   var lockWidget = new TextWidget({id: 'lock', position: 'left', controls: []});
