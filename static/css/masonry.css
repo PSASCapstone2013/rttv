@@ -9,10 +9,14 @@ body {
 }
 .widget {
   background: #ffffff;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 .widget.lock {
   width: 250px;
-  height: 150px;
+  height: 125px;
+}
+value{
+  font-family: "Andale Mono", AndaleMono, Consolas, monaco, "Lucida Console", "Lucida Sans Typewriter", monospace;
 }
 
 ok{

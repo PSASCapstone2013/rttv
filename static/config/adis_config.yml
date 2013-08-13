@@ -6,7 +6,7 @@
   - id: Acceleration
     type: Text
     width: 200
-    height: 150
+    height: 125
     controls:
       - label: X
         source: ADIS.AccelerometerX
@@ -24,7 +24,7 @@
   - id: Gyroscrope
     type: Text
     width: 200
-    height: 150
+    height: 125
     controls:
       - label: X
         source: ADIS.GyroscopeX
@@ -42,7 +42,7 @@
   - id: Magnetometer
     type: Text
     width: 200
-    height: 150
+    height: 125
     controls:
       - label: X
         source: ADIS.MagnetometerX
@@ -59,8 +59,8 @@
         
   - id: Temp/ADC
     type: Text
-    width: 200
-    height: 150
+    width: 250
+    height: 125
     controls:
       - label: Temperature
         source: ADIS.Temperature
