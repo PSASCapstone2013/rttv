@@ -19,6 +19,9 @@ def receive_packet(sock):
         return message
     except socket.timeout:
         return ''
+    except socket.error, e:
+        print 'socket errno:', e.errno
+        return ''
 
 
 def parse_sequence(message):
