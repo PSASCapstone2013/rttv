@@ -254,3 +254,25 @@ def print_stats(obj):
            obj['PacketsLostRecently'],
            obj['MostRecentTimestamp'],
            obj['TimeLastPacketReceived'])
+
+def print_GPS1(obj):
+    print("GPS1:  AgeOfDiff           %d sec\n" +
+          "       NumOfSats           %d\n" +
+          "       GPSWeek             %d\n" +
+          "       GPSTimeOfWeek       %.3f sec\n" +
+          "       Latitude, Longitude (%11f, %11f) deg\n"+
+          "       Height              %.3f m\n" +
+          "       VNorth, VEast, Vup  (%9.6f, %9.6f, %9.6f) m/s\n" +
+          "       StdDevResid         %11f m\n" +
+          "       NavMode             0x%.2x\n" +
+          "       ExtendedAgeOfDiff': %d sec") % \
+         (obj['AgeOfDiff'],
+          obj['NumOfSats'],
+          obj['GPSWeek'],
+          obj['GPSTimeOfWeek'],
+          obj['Latitude'], obj['Longitude'],
+          obj['Height'],
+          obj['VNorth'], obj['VEast'], obj['Vup'],
+          obj['StdDevResid'],
+          obj['NavMode'] & 0xffff,
+          obj['ExtendedAgeOfDiff'])

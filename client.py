@@ -85,7 +85,7 @@ def send_data_to_front_end_v2():
         send_json_obj(Messages.adis.data)
         debug.print_ADIS(Messages.adis.data)
     else:
-        print "ADIS:  no data.\n\n\n\n\n"
+        print "ADIS:  no data\n\n\n\n\n"
 
     # ROLL, prepare and send
     if Messages.roll.counter > 0:
@@ -93,8 +93,17 @@ def send_data_to_front_end_v2():
         send_json_obj(Messages.roll.data)
         debug.print_ROLL(Messages.roll.data)
     else:
-        print "ROLL:  no data.\n"
+        print "ROLL:  no data\n"
 
+    # GPS1, prepare and send
+    if Messages.gps1.counter > 0:
+        Messages.gps1.add_other_fields()
+        send_json_obj(Messages.gps1.data)
+        debug.print_GPS1(Messages.gps1.data)
+    else:
+        print "GPS1:  no data\n\n\n\n\n\n\n\n\n"
+    
+        
     # Send statistics
     obj = stats.get()
     debug.print_stats(obj)
@@ -103,6 +112,7 @@ def send_data_to_front_end_v2():
     # reset data for the next time chunk
     Messages.adis.reset()
     Messages.roll.reset()
+    Messages.gps1.reset()
     stats.reset()
 
     print "\n", "time:  " + stats.get_current_time_string()

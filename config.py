@@ -41,11 +41,13 @@ KELVIN_MINUS_CELSIUS = 273.0  # (K = C + 273) equivalent to (K - C = 273)
 
 # message format
 delimiter = struct.Struct('!4sLH')
+gps1_struct = struct.Struct("<BBH 3d 5f HH"),  # GPS BIN1
+                    # more details about GPS format here:
+                    # http://www.hemispheregps.com/gpsreference/Bin1.htm
 message_type = {
-    'SEQN':     delimiter,                       # packet log separator
-    'GPS\x01':  struct.Struct("<BBH 3d 5f HH"),  # GPS BIN1
-    # more details about GPS format here:
-    # http://www.hemispheregps.com/gpsreference/Bin1.htm
+    'SEQN':     delimiter,                      # packet log separator
+    'GPS\x01':  struct.Struct("<BBH 3d 5f HH"),
+    'GPS1':     struct.Struct("<BBH 3d 5f HH"),    
     'ADIS':     struct.Struct("<12h"),          # ADIS16405 IMU
     'MPU9':     struct.Struct(">7H"),           # MPU9150 IMU
     'MPL3':     struct.Struct(">2L"),           # MPL3115A2 Pressure Sensor

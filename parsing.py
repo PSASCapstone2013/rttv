@@ -57,7 +57,9 @@ def data_is_truncated(message, length_expected):
 
 
 def parse_data(message_id, timestamp, length, data):
-    if message_id == 'SEQN':
+    if message_id == 'SEQN' or \
+       message_id == 'MPL3' or \
+       message_id == 'MPU9':
         return  # skip
 
     if message_id == 'ERRO':  # data contains a string message
@@ -92,6 +94,13 @@ def parse_data(message_id, timestamp, length, data):
         obj = Messages.roll.convert(parsed_data)
         Messages.roll.average(obj)
         return
+
+    if message_id == 'GPS\x01' or message_id == 'GPS1':
+        obj = Messages.gps1.convert(parsed_data)
+        Messages.gps1.overwrite(obj) # store the most recent one only
+        return
+        
+    print "Warning: unknown message id '" + message_id + "'"
 
     # TODO: GPS1 parsing/processing when actual data is available for testing
     # TODO: MPL3 parsing/processing when PSAS makes it ready
