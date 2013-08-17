@@ -64,7 +64,7 @@
     controls:
       - label: Temperature
         source: ADIS.Temperature
-        units: kelvin
+        units: tempC
       - label: Auxiliary ADC
         source: ADIS.AuxiliaryADC
         units: V
@@ -76,5 +76,5 @@
     maxDataSize: 200
     controls:
       - label: Z Roll
-        source: ADIS.GyroscopeX
+        source: ADIS.GyroscopeX.Neg
         units: deg/sec
