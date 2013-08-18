@@ -3,10 +3,18 @@
 # Adding the suffix .Max or .Min to any JSON source will give you the maximum or minimum value over time.
 # Adding the suffix .Neg to any JSON source will negate the incoming value.
 
+  - type: Layout
+    columns:
+      - id: column1
+        width: 25%
+      - id: column2
+        width: 70%
+
   - id: GPS Status
     type: Text
     width: 200
     height: 125
+    column: column1
     controls:
       - label: NavMode
         source: "GPS\x01.NavMode"
@@ -17,6 +25,7 @@
     type: Text
     width: 200
     height: 125
+    column: column1
     controls:
       - label: Lat
         source: "GPS\x01.Latitude"
@@ -35,6 +44,7 @@
     type: Text
     width: 200
     height: 125
+    column: column1
     controls:
       - label: X
         source: ADIS.AccelerometerX
@@ -53,6 +63,7 @@
     type: LineGraph
     width: 600
     height: 320
+    column: column2
     maxDataSize: Number.MAX_VALUE
     controls:
       - label: Z Roll
@@ -63,6 +74,7 @@
     type: Gauge
     label: Altitude
     size: 250
+    column: column2
     minorTicks: 5
     max: 10000
     yellowPercent: 80

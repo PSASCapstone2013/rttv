@@ -5,10 +5,9 @@
 
     <title>PSAS - Real Time Telemetry Visualization</title>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="/static/css/masonry.css"/>
+    <link rel="stylesheet" type="text/css" media="screen" href="/static/css/style.css"/>
 
     <script src="/static/scripts/jquery.min.js"></script>
-    <script src="/static/scripts/masonry.pkgd.min.js"></script>
     <script src="/static/scripts/d3.v2.js"></script>
     <script src="/static/scripts/d3_func.js"></script>
     <script src="/static/scripts/js-yaml.min.js"></script>
@@ -27,12 +26,6 @@
 </html>
 
 <script>
-
-  // Masonry
-  docReady(function() {
-    var container = document.querySelector('.container');
-    var msnry = new Masonry( container, { columnWidth: 50 });
-  });
 
   // Websocket
   $(function () {  
@@ -108,6 +101,12 @@
       return new TextWidget(config);
       case 'Gauge':
       return new Gauge(config);
+      case 'Layout':
+      // Add columns
+      config.columns.forEach(function(column) {
+        $('.container').append('<div id ="' + column.id + '" style="width:' + column.width + '; float:left; display:inline-block;"></div>');
+      });
+      break;
       default:
       return null;
     }

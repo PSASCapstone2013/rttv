@@ -6,6 +6,7 @@ body {
 /* Layout */
 .container {
 	margin: 5px 5px 5px;
+	overflow: hidden;
 }
 .widget {
   background: #ffffff;
