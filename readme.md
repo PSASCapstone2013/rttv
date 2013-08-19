@@ -151,23 +151,17 @@ Right now the backend does not send the units in the JSON object so the incoming
 }
 ```
 
-### Packet Analyze
+### Packet Stats
 
 ```json
 {
-  'fieldID': 'Analyze',
-  'PacketReceived':       number of packet received in a specific time interval
-  'latestPacketReceived': timestamp of the latest packet received 
-  'PacketLost':[]
+  'fieldID': 'Stats',
+  'PacketsReceivedTotal': total packets received
+  'PacketsLostTotal': total packets lost
+  'PacketsReceivedRecently': number of packet received in a specific time interval
+  'PacketsLostRecently': number of packet lost in a specific time interval
+  'MostRecentTimestamp': timestamp of the latest packet received
+  'TimeLastPacketReceived': time since last packet received, formate as hh:mm:ss:s
 }
 ```
 
-#### PacketLost is a list of lost packet, each element has:
-
-```json
-{
-  'From'      : time when we start loosing packets
-  'To'        : time when we receive a new packet
-  'PacketLost': Number of packets lost
-}
-```

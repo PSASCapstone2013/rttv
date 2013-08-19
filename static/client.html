@@ -35,13 +35,13 @@
     
     connection.onopen = function () {
       connection.send('Client Connected');
-      lockWidget.setText('Connection is <ok>open</ok>');
+      //lockWidget.setText('Connection is <ok>open</ok>');
     };
     connection.onerror = function (error) {
-      lockWidget.setText('Connection is <ohno>closed</ohno>.');
+      //lockWidget.setText('Connection is <ohno>closed</ohno>.');
     };
     connection.onclose = function () {
-      lockWidget.setText('Connection is <ohno>closed</ohno>.');
+      //lockWidget.setText('Connection is <ohno>closed</ohno>.');
     };
     
     connection.onmessage = function (message) {
@@ -57,7 +57,7 @@
         
         // Parsing Analyze packet to show connection status.
         // Exists here since what we're displaying is beyond scope of config file.
-        if (json.fieldID == 'Stats'){
+        /*if (json.fieldID == 'Stats'){
           var received = json.PacketsReceivedRecently;
           var lostPercent = 0;
           var receivedTotal = json.PacketsReceivedTotal;
@@ -69,7 +69,7 @@
             + '<br>Cumulative Percent Loss: ' + lostPercent.toFixed(0) + '%'
             + '<br>Last Packet Rcvd: ' + json.TimeLastPacketReceived;
           lockWidget.setText(connection);
-        }
+        }*/
         
       } catch (e) {
         console.log(e.toString());
@@ -95,10 +95,10 @@
   
   function makeWidget(config) {
     switch(config.type) {
+    	case 'Text':
+      return new TextWidget(config);
       case 'LineGraph':
       return new LineGraph(config);
-      case 'Text':
-      return new TextWidget(config);
       case 'Gauge':
       return new Gauge(config);
       case 'Layout':
@@ -114,7 +114,6 @@
 
   /******* initialized widgets from config file passed in the 'config' query string param *******/
   var configs = loadConfigs();
-  var lockWidget = new TextWidget({id: 'lock', controls: []});
     
   widgets = [];
   for (var i = 0; i < configs.length; i++) {

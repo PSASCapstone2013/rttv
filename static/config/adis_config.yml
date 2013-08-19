@@ -3,16 +3,30 @@
 # Adding the suffix .Max or .Min to any JSON source will give you the maximum or minimum value over time.
 # Adding the suffix .Neg to any JSON source will negate the incoming value.
 
-  - type: Layout
+  - id: Adis Layout
+    type: Layout
     columns:
       - id: column1
         width: 25%
       - id: column2
-        width: 70%
+        width: 75%
 
+  - id: Stats
+    type: Text
+    height: 125
+    column: column1
+    controls:
+      - label: Incoming Packets
+        source: Stats.PacketsReceivedRecently
+      - label: Incoming Total
+        source: Stats.PacketsReceivedTotal
+      - label: Lost Total
+        source: Stats.PacketsLostTotal
+      - label: Last Packet Rcvd
+        source: Stats.TimeLastPacketReceived
+        
   - id: Acceleration
     type: Text
-    width: 200
     height: 125
     column: column1
     controls:
@@ -31,7 +45,6 @@
 
   - id: Gyroscrope
     type: Text
-    width: 200
     height: 125
     column: column1
     controls:
@@ -50,7 +63,6 @@
         
   - id: Magnetometer
     type: Text
-    width: 200
     height: 125
     column: column1
     controls:
@@ -66,12 +78,22 @@
       - label: Magnitude
         source: ADIS.MagnetometerMagn
         units: gauss
-        
+         
+  - id: Z-Roll
+    type: LineGraph
+    width: 600
+    height: 331
+    column: column2
+    maxDataSize: 200
+    controls:
+      - label: Z Roll
+        source: ADIS.GyroscopeX.Neg
+        units: deg/sec
+
   - id: Temp/ADC
     type: Text
-    width: 200
     height: 125
-    column: column1
+    column: column2
     controls:
       - label: Temperature
         source: ADIS.Temperature
@@ -79,14 +101,3 @@
       - label: Auxiliary ADC
         source: ADIS.AuxiliaryADC
         units: V
-        
-  - id: Z-Roll
-    type: LineGraph
-    width: 600
-    height: 320
-    column: column2
-    maxDataSize: 200
-    controls:
-      - label: Z Roll
-        source: ADIS.GyroscopeX.Neg
-        units: deg/sec
