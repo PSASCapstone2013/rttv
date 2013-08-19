@@ -115,6 +115,7 @@ function Gauge(config) {
         .style("stroke", "#666")
         .style("opacity", 1);
 
+        self.appendText(svg, 0, this.config.valueTextConfig);
         self.draw();
     };
 
@@ -168,12 +169,11 @@ function Gauge(config) {
             .ease("linear")
             .duration(100);
 
-        var container =    pointerContainer.selectAll("text")
+        pointerContainer.selectAll("text")
             .data([value])
-            .text(Math.round(value))
+            .text(value)
             .enter();
 
-        self.appendText(container, Math.round(value), this.config.valueTextConfig);
     };
 
     this.valueToDegrees = function(value) {
@@ -201,8 +201,7 @@ function Gauge(config) {
             .attr("text-anchor", textConfig.anchor)
             .text(text)
             .style("font-size", textConfig.size + "px")
-            .style("fill", "#333")
-            .style("stroke-width", "0px");
+            .style("fill", "#333");
     };
 
     this.render();

@@ -38,10 +38,9 @@
     controls:
       - label: X
         source: ADIS.AccelerometerX
-        units: m/s^2
+        color: red # optional
       - label: Y
         source: ADIS.AccelerometerY
-        units: m/s^2
       - label: Z
         source: ADIS.AccelerometerZ
         units: m/s^2
@@ -58,16 +57,23 @@
       - label: Z Roll
         source: ADIS.GyroscopeX
         units: deg/sec
-        
+      - label: Z Roll Max
+        source: ADIS.GyroscopeX.Max
+        units: deg/sec
+      - label: Z Roll Min
+        source: ADIS.GyroscopeX.Min
+        units: deg/sec
+        color: red # optional
+
   - id: Altitude
     type: Gauge
     label: Altitude
     size: 250
     minorTicks: 5
-    max: 10000
+    max: 2
     yellowPercent: 80
     redPercent: 90
     controls:
-      - label: Height
-        source: "GPS\x01.Height"
-        units: m
+      - label: Magnitude
+        source: ADIS.AccelerometerMagn
+        units: gee

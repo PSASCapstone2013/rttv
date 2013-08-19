@@ -1,22 +1,19 @@
-var color = d3.scale.category10();
+function Path(svg, data, generatorFunction, color) {
 
-function Path(svg, data, generatorName, generatorFunction) {
-
-    var path = svg.append("g")
-        .attr("clip-path", "url(#clip)")
-        .append("path")
+    var path = svg.append('path')
+        .attr('clip-path', 'url(#clip)')
         .data([data])
-        .attr("class", generatorName);
+        .attr('stroke', color)
+        .attr('fill', 'none')
+        .attr('stroke-width', 1.5);
 
     // redraw the path
-    this.draw = function(translate) {
-        path.attr("d", generatorFunction)
-         .attr("transform", "translate(0)")
-         .transition()
-         .attr("transform", "translate(" + translate + ")");
+    this.draw = function() {
+        path.attr('d', generatorFunction);
     };
 }
 
+// returns an array of :size zeros. ex: zeros(3) => [0, 0, 0]
 function zeros(size) {
     return d3.range(size).map(function() { return 0; });
 }

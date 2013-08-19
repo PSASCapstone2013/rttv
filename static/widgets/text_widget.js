@@ -8,7 +8,7 @@ function TextWidget(config) {
         var text = '<strong>' + config.id + '</strong>';
         this.config.controls.forEach(function(control) {
             text += "<br>";
-            text += control.label + ': <value>' + control.value + ' ' + control.units + '</value>';
+            text += control.label + ': <value style="color:' + control.color + '">' + control.value + ' ' + control.units + '</value>';
         });
         this.setText(text);
     };

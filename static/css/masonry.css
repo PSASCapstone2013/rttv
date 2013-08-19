@@ -30,15 +30,7 @@ svg {
   font: 10px sans-serif;
   margin: 0px 5px 10px;
 }
-.line {
-  fill: none;
-  stroke: #000;
-  stroke-width: 1.5px;
-}
-.area {
-  fill: none;
-  stroke-width: 0;
-}
+
 .axis path, .axis line {
   fill: none;
   stroke: #000;

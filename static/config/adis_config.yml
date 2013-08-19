@@ -78,3 +78,4 @@
       - label: Z Roll
         source: ADIS.GyroscopeX
         units: deg/sec
+        color: blue
