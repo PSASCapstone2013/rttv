@@ -20,7 +20,13 @@
   </head>
 
   <body>
-    <div class="container"/>
+    <div id="overlay"></div>
+    <div id="msgBox">
+      <h1>Lost Connection</h1>
+    </div>
+    <div id="wrapper">
+      <div class="container"/>
+    </div>
   </body>
 
 </html>
@@ -35,13 +41,16 @@
     
     connection.onopen = function () {
       connection.send('Client Connected');
-      //lockWidget.setText('Connection is <ok>open</ok>');
     };
     connection.onerror = function (error) {
-      //lockWidget.setText('Connection is <ohno>closed</ohno>.');
     };
     connection.onclose = function () {
-      //lockWidget.setText('Connection is <ohno>closed</ohno>.');
+    	// Show lost connection message
+    	var overlay = document.getElementById('overlay');
+      var msgBox = document.getElementById('msgBox');
+      overlay.style.opacity = .2;
+      overlay.style.display = "block";
+      msgBox.style.display = "block";
     };
     
     connection.onmessage = function (message) {
@@ -54,22 +63,6 @@
             widget.putJSON(json);
           });
         }
-        
-        // Parsing Analyze packet to show connection status.
-        // Exists here since what we're displaying is beyond scope of config file.
-        /*if (json.fieldID == 'Stats'){
-          var received = json.PacketsReceivedRecently;
-          var lostPercent = 0;
-          var receivedTotal = json.PacketsReceivedTotal;
-          var lostTotal = json.PacketsLostTotal;
-          lostPercent = lostTotal / (lostTotal + receivedTotal) * 100;
-          
-          var connection = 'Connection is <ok>open</ok>'
-            + '<br>Packets Incoming: ' + received
-            + '<br>Cumulative Percent Loss: ' + lostPercent.toFixed(0) + '%'
-            + '<br>Last Packet Rcvd: ' + json.TimeLastPacketReceived;
-          lockWidget.setText(connection);
-        }*/
         
       } catch (e) {
         console.log(e.toString());
