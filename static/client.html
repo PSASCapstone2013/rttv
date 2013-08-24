@@ -22,7 +22,7 @@
   <body>
     <div id="overlay"></div>
     <div id="msgBox">
-      <h1>Lost Connection</h1>
+      <h1>Connection Lost</h1>
     </div>
     <div id="wrapper">
       <div class="container"/>
@@ -45,8 +45,8 @@
     connection.onerror = function (error) {
     };
     connection.onclose = function () {
-    	// Show lost connection message
-    	var overlay = document.getElementById('overlay');
+      // Show lost connection message
+      var overlay = document.getElementById('overlay');
       var msgBox = document.getElementById('msgBox');
       overlay.style.opacity = .2;
       overlay.style.display = "block";
@@ -88,7 +88,7 @@
   
   function makeWidget(config) {
     switch(config.type) {
-    	case 'Text':
+      case 'Text':
       return new TextWidget(config);
       case 'LineGraph':
       return new LineGraph(config);
@@ -96,10 +96,8 @@
       return new Gauge(config);
       case 'Layout':
       // Add columns
-      config.columns.forEach(function(column) {
-        $('.container').append('<div id ="' + column.id + '" style="width:' + column.width + '; float:left; display:inline-block;"></div>');
-      });
-      break;
+      $('.container').append(addColumns(config));
+      return null;
       default:
       return null;
     }
@@ -115,4 +113,22 @@
       widgets.push(widget);
     }
   };
+  
+  function addColumns(config) {
+    var toAppend = '';
+    
+    config.columns.forEach(function(column) {
+      // if stand alone column just add it
+      if (typeof column.columns == 'undefined') {
+        toAppend = toAppend + '<div id ="' + column.id + '" style="width:' + column.width + '; float:left; display:inline-block;"></div>';
+      }
+      // else traverse through nested columns
+      else {
+        toAppend = toAppend + '<div id ="' + column.id + '" style="width:' + column.width + '; float:left; display:inline-block;">';
+        toAppend = toAppend + addColumns(column) + '</div>';
+      }
+    });
+    
+    return toAppend;
+  }
 </script>

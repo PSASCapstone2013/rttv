@@ -9,6 +9,13 @@
         width: 25%
       - id: column2
         width: 75%
+        columns:
+          - id: column2_a
+            width: 100%
+          - id: column2_b
+            width: 50%
+          - id: column2_c
+            width: 50%
 
   - id: Stats
     type: Text
@@ -74,7 +81,7 @@
     type: LineGraph
     width: 600
     height: 320
-    column: column2
+    column: column2_a
     maxDataSize: Number.MAX_VALUE
     controls:
       - label: Z Roll
@@ -85,7 +92,7 @@
     type: Gauge
     label: Altitude
     size: 250
-    column: column2
+    column: column2_b
     minorTicks: 5
     max: 10000
     yellowPercent: 80
@@ -94,3 +101,22 @@
       - label: Height
         source: "GPS\x01.Height"
         units: m
+
+  - id: Gyroscrope
+    type: Text
+    height: 125
+    column: column2_c
+    controls:
+      - label: X
+        source: ADIS.GyroscopeX
+        units: deg/sec
+      - label: Y
+        source: ADIS.GyroscopeY
+        units: deg/sec
+      - label: Z
+        source: ADIS.GyroscopeZ
+        units: deg/sec
+      - label: Magnitude
+        source: ADIS.GyroscopeMagn
+        units: deg/sec
+        

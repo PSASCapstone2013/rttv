@@ -82,7 +82,7 @@
   - id: Z-Roll
     type: LineGraph
     width: 600
-    height: 331
+    height: 330
     column: column2
     maxDataSize: 200
     controls:

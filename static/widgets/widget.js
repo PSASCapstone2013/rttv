@@ -19,7 +19,7 @@ function Widget (config) {
       $('.container').append("<div class=\"widget " + this.config.id + "\" id=\"widget " + this.config.id + "\"></div>");
     }
     else {
-    	$('#' + this.config.column).append("<div class=\"widget " + this.config.id + "\" id=\"widget " + this.config.id + "\"></div>");
+      $('#' + this.config.column).append("<div class=\"widget " + this.config.id + "\" id=\"widget " + this.config.id + "\"></div>");
     }
     this.div = document.getElementById('widget ' + this.config.id);
 
