@@ -3,16 +3,16 @@ import platform
 
 parsing_log = None
 
-
 def open_logs():
     if not DEBUG:
         return
     global parsing_log
 
+    # log for validation for messages
     parsing_log_file_name = \
-        datetime.datetime.now().strftime("data_validation_log_%Y.%m.%d_%H-%M-%S.txt")
+        datetime.datetime.now().strftime("log/data_validation_%Y.%m.%d_%H-%M-%S.txt")
     parsing_log = open(parsing_log_file_name, 'w')
-
+    parsing_log.write("This log contains messages with values which don't pass validation\n")
 
 def clear_screen():
     if clear_screen.platform == 'Windows':

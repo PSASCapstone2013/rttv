@@ -6,7 +6,7 @@ from back_to_front import *
 from time import time
 
 stats = Stats()
-
+packet_log = open(PACKET_LOG_FILENAME, "a")
 
 # global objects for data processing
 def main():
@@ -14,10 +14,8 @@ def main():
     thread.start_new_thread(tornado_thread, (0, 0))
     receive_packets()
 
-
 def receive_packets():
     global stats
-    log_file = open(LOG_FILE_FORMAT, "a")
     sock = init_socket()
 
     # listen socket
@@ -31,7 +29,7 @@ def receive_packets():
             debug.print_char('.')  # packet received successfully --> print a dot
         seq = parse_sequence(message)
         stats.new_packet_received(seq)
-        dump_packet_to_log_file(log_file, message, seq)
+        dump_packet_to_log_file(message, seq)
 
         # parse messages from the packet
         message = message[SEQUENCE_LENGTH:]
@@ -47,10 +45,11 @@ def receive_packets():
             message = message[HEADER_LENGTH + length:]  # go to next message
 
 
-def dump_packet_to_log_file(log_file, message, seq):
+def dump_packet_to_log_file(message, seq):
+    global packet_log
     # dump packet to log file
-    log_file.write(delimiter.pack('SEQN', seq, len(message)))  # add delimiter
-    log_file.write(message)
+    packet_log.write(delimiter.pack('SEQN', seq, len(message)))  # add delimiter
+    packet_log.write(message)
     # TODO: need to figure out (define) delimiter format
 
 
@@ -76,46 +75,58 @@ data_sync.next_update_time = time() + TIMEOUT
 
 
 def send_data_to_front_end_v2():
-    global stats
     debug.clear_screen()
+    send_ADIS()
+    send_ROLL()
+    send_GPS1()
+    send_stats()
+    reset_processing()
+    print "\n", "time:  " + stats.get_current_time_string()
 
+def send_ADIS():
     # ADIS, prepare and send
     if Messages.adis.counter > 0:
         Messages.adis.add_other_fields()
         send_json_obj(Messages.adis.data)
         debug.print_ADIS(Messages.adis.data)
+        Messages.adis.print_log()
     else:
         print "ADIS:  no data\n\n\n\n\n"
 
+def send_ROLL():
     # ROLL, prepare and send
     if Messages.roll.counter > 0:
         Messages.roll.add_other_fields()
         send_json_obj(Messages.roll.data)
         debug.print_ROLL(Messages.roll.data)
+        Messages.roll.print_log()
     else:
         print "ROLL:  no data\n"
-
+        
+def send_GPS1():
     # GPS1, prepare and send
     if Messages.gps1.counter > 0:
         Messages.gps1.add_other_fields()
         send_json_obj(Messages.gps1.data)
         debug.print_GPS1(Messages.gps1.data)
+        Messages.gps1.print_log()
     else:
         print "GPS1:  no data\n\n\n\n\n\n\n\n\n"
-    
-        
+
+def send_stats():
+    global stats
     # Send statistics
     obj = stats.get()
     debug.print_stats(obj)
     send_json_obj(obj)
 
+def reset_processing():
+    global stats
     # reset data for the next time chunk
     Messages.adis.reset()
     Messages.roll.reset()
     Messages.gps1.reset()
     stats.reset()
-
-    print "\n", "time:  " + stats.get_current_time_string()
-
+        
 if __name__ == "__main__":
     main()
