@@ -27,31 +27,51 @@ Widgets display data.  Currently there are three types of widgets available:
 * **LineGraph** displays a value in a line graph
 * **Gauge** displays a value in a graphical gauge
 
-### Layout
-
-Currently the widget layout on the page is handled by the grid layout library [masonry](http://masonry.desandro.com/).  It attemps to place the widgets in the optimal position based on available vertical space.  The colors and margins of the layout are specified in ```static/css/masonry.css```.
-
 ### Configuration
 
-You are able to specify which widgets are displayed and which data those widgets display by editing a yaml file.  The existing config files can be found in ```static/config/*.yml```.
+You are able to specify which widgets are displayed, what data they display and where they are oriented on the page by editing a yaml file.  The existing config files can be found in ```static/config/*.yml```.
+
+#### Layout Example
+
+A custom layout can be created by specifying columns and their widths.  In each widget you can then specify what column they will appear in.  You can also nest column layouts within other columns.  This layout method is achieved by nesting div elements and inserting the widgets into them in the order that they appear in the config file.  The colors and margins of the layout are specified in ```static/css/style.css```.
+
+    - type: Layout
+      columns:
+        - id: column1
+          width: 25%
+        - id: column2
+          width: 75%
+          columns:
+            - id: column2_a
+              width: 100%
+            - id: column2_b
+              width: 50%
+            - id: column2_c
+              width: 50%
+
+* **type**:	Specifies that it's the layout
+* **id**:	Identifies each column, each widget will then specify what column they reside in using this id
+* **width**:	Width of the column; can be specified in % or px
 
 #### Text Widget Example
     - id: Example Text Widget
       type: Text
       width: 200
       height: 150
+      column: column1
       controls:
         - label: X
           source: ADIS.AccelerometerX
           units: m/s^2
         - label: Lat
-          source: "GPS\x01.Latitude"
+          source: GPS1.Latitude
           units: deg
 
 * **id**:	This identifies the widget and will be displayed as the header
 * **type**:	Specifies that it's a Text widget
 * **width**:	Width of widget
 * **height**:	Height of widget
+* **column**:	Column widget will be placed in
 * **controls**:	Add each value you'd like to view in the widget
   * **label**:	This will be the label displayed for the value
   * **source**:	Specifies the value to be displayed.  Entered in the form of ```[packet_field_ID].[value_to_display]```.
@@ -66,6 +86,7 @@ You are able to specify which widgets are displayed and which data those widgets
       width: 600
       height: 320
       maxDataSize: 200
+      column: column2
       controls:
         - label: Z Roll
           source: ADIS.GyroscopeX

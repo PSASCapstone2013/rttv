@@ -22,7 +22,7 @@
   <body>
     <div id="overlay"></div>
     <div id="msgBox">
-      <h1>Connection Lost</h1>
+      <h1 id="msg"></h1>
     </div>
     <div id="wrapper">
       <div class="container"/>
@@ -48,6 +48,8 @@
       // Show lost connection message
       var overlay = document.getElementById('overlay');
       var msgBox = document.getElementById('msgBox');
+      var msg = document.getElementById('msg');
+      msg.innerHTML = 'Connection Lost';
       overlay.style.opacity = .2;
       overlay.style.display = "block";
       msgBox.style.display = "block";

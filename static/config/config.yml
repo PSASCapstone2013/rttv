@@ -37,9 +37,9 @@
     column: column1
     controls:
       - label: NavMode
-        source: "GPS\x01.NavMode"
+        source: GPS1.NavMode
       - label: Satellites
-        source: "GPS\x01.NumOfSats"
+        source: GPS1.NumOfSats
         
   - id: GPS
     type: Text
@@ -47,16 +47,16 @@
     column: column1
     controls:
       - label: Lat
-        source: "GPS\x01.Latitude"
+        source: GPS1.Latitude
         units: deg
       - label: Long
-        source: "GPS\x01.Longitude"
+        source: GPS1.Longitude
         units: deg
       - label: Height
-        source: "GPS\x01.Height"
+        source: GPS1.Height
         units: m
       - label: Max Height
-        source: "GPS\x01.Height.Max"
+        source: GPS1.Height.Max
         units: m
         
   - id: Acceleration
@@ -99,7 +99,7 @@
     redPercent: 90
     controls:
       - label: Height
-        source: "GPS\x01.Height"
+        source: GPS1.Height
         units: m
 
   - id: Gyroscrope
