@@ -48,6 +48,8 @@ class Message:
 
         json_log.write(self.id + " ")
         for key in self.data.keys():
+            if key == 'fieldID':
+                continue
             value = self.data[key]
             json_log.write(str(value) + " ")
         json_log.write("\n")
@@ -106,8 +108,8 @@ class ADIS(Message):
 
         json_log.write("%s "    % self.data['fieldID'])
         json_log.write("%d "    % self.data['timestamp'])
-        json_log.write("%1.1f"  % self.data['PowerSupply'])
-        json_log.write("%8.3f"  % self.data['GyroscopeX'])
+        json_log.write("%1.1f " % self.data['PowerSupply'])
+        json_log.write("%8.3f " % self.data['GyroscopeX'])
         json_log.write("%8.3f " % self.data['GyroscopeY'])
         json_log.write("%8.3f " % self.data['GyroscopeZ'])
         json_log.write("%8.3f " % self.data['GyroscopeMagn'])
@@ -120,7 +122,7 @@ class ADIS(Message):
         json_log.write("%9.6f " % self.data['MagnetometerZ'])
         json_log.write("%9.6f " % self.data['MagnetometerMagn'])
         json_log.write("%6.2f " % self.data['Temperature'])
-        json_log.write("%12.9f" % self.data['AuxiliaryADC'])
+        json_log.write("%12.9f " % self.data['AuxiliaryADC'])
         json_log.write("\n")
         
         
@@ -156,8 +158,8 @@ class GPS1(Message):
 
         json_log.write("%s "     % self.data['fieldID'])
         json_log.write("%d "     % self.data['timestamp'])
-        json_log.write("%3d"     % self.data['AgeOfDiff'])
-        json_log.write("%3d"     % self.data['NumOfSats'])
+        json_log.write("%3d "     % self.data['AgeOfDiff'])
+        json_log.write("%3d "     % self.data['NumOfSats'])
         json_log.write("%6d "    % self.data['GPSWeek'])
         json_log.write("%12.3f " % self.data['GPSTimeOfWeek'])
         json_log.write("%12.6f " % self.data['Latitude'])
