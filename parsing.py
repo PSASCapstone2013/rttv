@@ -69,12 +69,14 @@ def parse_data(message_id, timestamp, length, data):
         print "ERRO:\"" + data + "\""
         obj = ERRO().convert(timestamp, data)
         send_json_obj(obj)
+        debug.print_json_log(obj, message_id)
         return
 
     if message_id == 'MESG':  # data contains a string message
         print "MESG:\"" + data + "\""
         obj = MESG().convert(timestamp, data)
         send_json_obj(obj)
+        debug.print_json_log(obj, message_id)
         return
 
     # parse messages containing flight data
@@ -91,16 +93,19 @@ def parse_data(message_id, timestamp, length, data):
         if not debug.valid_ADIS(obj):
             #debug.print_raw_data(data, 2) # 2 bytes per line
             debug.ADIS_conversion(data, parsed_data, obj)
+        debug.print_json_log(obj, message_id)
         return
 
     if message_id == 'ROLL':
         obj = Messages.roll.convert(parsed_data)
         Messages.roll.average(obj)
+        debug.print_json_log(obj, message_id)
         return
 
     if message_id == 'GPS\x01' or message_id == 'GPS1':
         obj = Messages.gps1.convert(parsed_data)
         Messages.gps1.overwrite(obj) # store the most recent one only
+        debug.print_json_log(obj, message_id)
         return
         
     print "Warning: unknown message id '" + message_id + "'"

@@ -29,10 +29,12 @@ DATA_LENGTH_OFFSET = TIMESTAMP_OFFSET + TIMESTAMP_LENGTH
 DATA_OFFSET = DATA_LENGTH_OFFSET + DATA_LENGTH_LENGTH
 
 # log filename format
-PACKET_LOG_FILENAME = \
-    datetime.datetime.now().strftime("log/log_%Y.%m.%d_%H-%M-%S")
-JSON_LOG_FILENAME = \
-    datetime.datetime.now().strftime("log/json_messages_%Y.%m.%d_%H-%M-%S.txt")
+PACKET_LOG_FILENAME = datetime.datetime.now().strftime(
+    "log/log_%Y.%m.%d_%H-%M-%S")
+VALIDATION_LOG_FILENAME = datetime.datetime.now().strftime(
+    "log/data_validation_%Y.%m.%d_%H-%M-%S.txt")
+MESSAGES_LOG_FILENAME = datetime.datetime.now().strftime(
+    "log/messages_%Y.%m.%d_%H-%M-%S.json")
 
 # units conversion
 MILLI = 0.001

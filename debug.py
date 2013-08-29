@@ -1,18 +1,24 @@
 from config import *
 import platform
 
-parsing_log = None
+validation_log = None
+msgs_log = None
 
 def open_logs():
     if not DEBUG:
         return
-    global parsing_log
+    global validation_log, msgs_log
 
     # log for validation for messages
-    parsing_log_file_name = \
-        datetime.datetime.now().strftime("log/data_validation_%Y.%m.%d_%H-%M-%S.txt")
-    parsing_log = open(parsing_log_file_name, 'w')
-    parsing_log.write("This log contains messages with values which don't pass validation\n")
+    validation_log_file_name = \
+        datetime.datetime.now().strftime(VALIDATION_LOG_FILENAME)
+    validation_log = open(validation_log_file_name, 'w')
+    validation_log.write("This log contains messages with values which don't " +
+                      "pass validation\n")
+                      
+    # log for messages received             
+    msgs_log_filename = datetime.datetime.now().strftime(MESSAGES_LOG_FILENAME)
+    msgs_log = open(msgs_log_filename, 'w')
 
 def clear_screen():
     if clear_screen.platform == 'Windows':
@@ -45,9 +51,9 @@ print_char.time_str_prev = ""
 
 
 def parsing_message(string):
-    if parsing_log is None:
+    if validation_log is None:
         return
-    parsing_log.write(string + '\n')
+    validation_log.write(string + '\n')
 
 
 def print_raw_data(data, bytes_per_line):
@@ -62,16 +68,16 @@ def print_raw_data(data, bytes_per_line):
 
 
 def ADIS_conversion(data, parsed_data, obj):
-    if parsing_log is None:
+    if validation_log is None:
         return
 
-    parsing_log.write(
+    validation_log.write(
         "========================== ADIS ==========================\n")
-    parsing_log.write(
+    validation_log.write(
         "FIELD            RAW        RAW       CONVERTED      UNITS\n")
-    parsing_log.write(
+    validation_log.write(
         "description      hex      short        floating           \n")
-    parsing_log.write(
+    validation_log.write(
         "----------------------------------------------------------\n")
 
     #print "  fieldID:        %15s %15s %10s" % \
@@ -79,121 +85,121 @@ def ADIS_conversion(data, parsed_data, obj):
     #print "  timestamp:      %15d %15d %10s" % \
     #    (timestamp, obj['timestamp'], "ns")
 
-    parsing_log.write("PowerSupply:    %s %10d %15.3f %10s\n" %
+    validation_log.write("PowerSupply:    %s %10d %15.3f %10s\n" %
                      (data[0:2].encode("hex"), parsed_data[0], obj['PowerSupply'], "V"))
 
-    parsing_log.write("GyroscopeX:     %s %10d %15.3f %10s\n" %
+    validation_log.write("GyroscopeX:     %s %10d %15.3f %10s\n" %
                      (data[2:4].encode("hex"), parsed_data[1], obj['GyroscopeX'], 'deg/sec'))
-    parsing_log.write("GyroscopeY:     %s %10d %15.3f %10s\n" %
+    validation_log.write("GyroscopeY:     %s %10d %15.3f %10s\n" %
                      (data[4:6].encode("hex"), parsed_data[2], obj['GyroscopeY'], "deg/sec"))
-    parsing_log.write("GyroscopeZ:     %s %10d %15.3f %10s\n" %
+    validation_log.write("GyroscopeZ:     %s %10d %15.3f %10s\n" %
                      (data[6:8].encode("hex"), parsed_data[3], obj['GyroscopeZ'], "deg/sec"))
 
-    parsing_log.write("AccelerometerX: %s %10d %15.3f %10s\n" %
+    validation_log.write("AccelerometerX: %s %10d %15.3f %10s\n" %
                      (data[8:10].encode("hex"), parsed_data[4], obj['AccelerometerX'], "m/s^2"))
-    parsing_log.write("AccelerometerY: %s %10d %15.3f %10s\n" %
+    validation_log.write("AccelerometerY: %s %10d %15.3f %10s\n" %
                      (data[10:12].encode("hex"), parsed_data[5], obj['AccelerometerY'], "m/s^2"))
-    parsing_log.write("AccelerometerZ: %s %10d %15.3f %10s\n" %
+    validation_log.write("AccelerometerZ: %s %10d %15.3f %10s\n" %
                      (data[12:14].encode("hex"), parsed_data[6], obj['AccelerometerZ'], "m/s^2"))
 
-    parsing_log.write("MagnetometerX:  %s %10d %15.9f %10s\n" %
+    validation_log.write("MagnetometerX:  %s %10d %15.9f %10s\n" %
                      (data[14:16].encode("hex"), parsed_data[7], obj['MagnetometerX'], "teslas"))
-    parsing_log.write("MagnetometerY:  %s %10d %15.9f %10s\n" %
+    validation_log.write("MagnetometerY:  %s %10d %15.9f %10s\n" %
                      (data[16:18].encode("hex"), parsed_data[8], obj['MagnetometerY'], "teslas"))
-    parsing_log.write("MagnetometerZ:  %s %10d %15.9f %10s\n" %
+    validation_log.write("MagnetometerZ:  %s %10d %15.9f %10s\n" %
                      (data[18:20].encode("hex"), parsed_data[9], obj['MagnetometerZ'], "teslas"))
 
-    parsing_log.write("Temperature:    %s %10d %15.3f %10s\n" %
+    validation_log.write("Temperature:    %s %10d %15.3f %10s\n" %
                      (data[20:22].encode("hex"), parsed_data[10], obj['Temperature'], "deg K"))
 
-    parsing_log.write("AuxiliaryADC:   %s %10d %15.9f %10s\n" %
+    validation_log.write("AuxiliaryADC:   %s %10d %15.9f %10s\n" %
                      (data[22:24].encode("hex"), parsed_data[11], obj['AuxiliaryADC'], "V"))
 
-    parsing_log.write(
+    validation_log.write(
         "----------------------------------------------------------\n")
 
 
 def valid_ADIS(json_obj):
-    global parsing_log
+    global validation_log
     valid = True
-    if not DEBUG or parsing_log is None:
+    if not DEBUG or validation_log is None:
         return True
 
     #if json_obj['fieldID'] <> 'ADIS':
-    #    parsing_log.write("ADIS validation: ")
-    #    parsing_log.write("%s is not an ADIS id!\n" % \
+    #    validation_log.write("ADIS validation: ")
+    #    validation_log.write("%s is not an ADIS id!\n" % \
     #                      json_obj['fieldID'])
     #    valid = False
 
     if json_obj['PowerSupply'] < valid_ADIS.MIN_POWER_SUPPLY:
-        parsing_log.write("ADIS validation: ")
-        parsing_log.write("PowerSupply = %.3f V is too low!\n" %
+        validation_log.write("ADIS validation: ")
+        validation_log.write("PowerSupply = %.3f V is too low!\n" %
                           json_obj['PowerSupply'])
         valid = False
     if json_obj['PowerSupply'] > valid_ADIS.MAX_POWER_SUPPLY:
-        parsing_log.write("ADIS validation: ")
-        parsing_log.write("PowerSupply = %.3f V is too high!\n" %
+        validation_log.write("ADIS validation: ")
+        validation_log.write("PowerSupply = %.3f V is too high!\n" %
                           json_obj['PowerSupply'])
         valid = False
 
     for i in ['X', 'Y', 'Z']:
         identifier = 'Gyroscope' + i
         if json_obj[identifier] < valid_ADIS.MIN_GYROSCOPE:
-            parsing_log.write("ADIS validation: ")
-            parsing_log.write("%s = %.3f deg/sec is too low!\n" %
+            validation_log.write("ADIS validation: ")
+            validation_log.write("%s = %.3f deg/sec is too low!\n" %
                               (identifier, json_obj[identifier]))
             valid = False
         if json_obj[identifier] > valid_ADIS.MAX_GYROSCOPE:
-            parsing_log.write("ADIS validation: ")
-            parsing_log.write("%s = %.3f deg/sec is too high!\n" %
+            validation_log.write("ADIS validation: ")
+            validation_log.write("%s = %.3f deg/sec is too high!\n" %
                               (identifier, json_obj[identifier]))
             valid = False
 
     for i in ['X', 'Y', 'Z']:
         identifier = 'Accelerometer' + i
         if json_obj[identifier] < valid_ADIS.MIN_ACCELEROMETER:
-            parsing_log.write("ADIS validation: ")
-            parsing_log.write("%s = %.3f m/s^2 is too low!\n" %
+            validation_log.write("ADIS validation: ")
+            validation_log.write("%s = %.3f m/s^2 is too low!\n" %
                               (identifier, json_obj[identifier]))
             valid = False
         if json_obj[identifier] > valid_ADIS.MAX_ACCELEROMETER:
-            parsing_log.write("ADIS validation: ")
-            parsing_log.write("%s = %.3f m/s^2 is too high!\n" %
+            validation_log.write("ADIS validation: ")
+            validation_log.write("%s = %.3f m/s^2 is too high!\n" %
                               (identifier, json_obj[identifier]))
             valid = False
 
     for i in ['X', 'Y', 'Z']:
         identifier = 'Magnetometer' + i
         if json_obj[identifier] < valid_ADIS.MIN_MAGNETOMETER:
-            parsing_log.write("ADIS validation: ")
-            parsing_log.write("%s = %.3f T is too low!\n" %
+            validation_log.write("ADIS validation: ")
+            validation_log.write("%s = %.3f T is too low!\n" %
                               (identifier, json_obj[identifier]))
             valid = False
         if json_obj[identifier] > valid_ADIS.MAX_MAGNETOMETER:
-            parsing_log.write("ADIS validation: ")
-            parsing_log.write("%s = %.3f T is too high!\n" %
+            validation_log.write("ADIS validation: ")
+            validation_log.write("%s = %.3f T is too high!\n" %
                               (identifier, json_obj[identifier]))
             valid = False
 
     if json_obj['Temperature'] < valid_ADIS.MIN_TEMPERATURE:
-        parsing_log.write("ADIS validation: ")
-        parsing_log.write("Temperature = %.3f K is too low!\n" %
+        validation_log.write("ADIS validation: ")
+        validation_log.write("Temperature = %.3f K is too low!\n" %
                           json_obj['Temperature'])
         valid = False
     if json_obj['Temperature'] > valid_ADIS.MAX_TEMPERATURE:
-        parsing_log.write("ADIS validation: ")
-        parsing_log.write("Temperature = %.3f K is too high!\n" %
+        validation_log.write("ADIS validation: ")
+        validation_log.write("Temperature = %.3f K is too high!\n" %
                           json_obj['Temperature'])
         valid = False
 
     if json_obj['AuxiliaryADC'] < valid_ADIS.MIN_AUX_ADC:
-        parsing_log.write("ADIS validation: ")
-        parsing_log.write("AuxiliaryADC = %.9f V is too low!\n" %
+        validation_log.write("ADIS validation: ")
+        validation_log.write("AuxiliaryADC = %.9f V is too low!\n" %
                           json_obj['AuxiliaryADC'])
         valid = False
     if json_obj['AuxiliaryADC'] > valid_ADIS.MAX_AUX_ADC:
-        parsing_log.write("ADIS validation: ")
-        parsing_log.write("AuxiliaryADC = %.9f V is too high!\n" %
+        validation_log.write("ADIS validation: ")
+        validation_log.write("AuxiliaryADC = %.9f V is too high!\n" %
                           json_obj['AuxiliaryADC'])
         valid = False
 
@@ -276,3 +282,12 @@ def print_GPS1(obj):
           obj['StdDevResid'],
           obj['NavMode'] & 0xffff,
           obj['ExtendedAgeOfDiff'])
+
+def print_json_log(obj, message_id):
+    global msgs_log
+    if msgs_log == None:
+        return
+    dict_str = str(obj).replace("\'", "\"")
+    json_str = "{\"" + message_id + "\":" + dict_str + "}\n"
+    msgs_log.write(json_str)
+    

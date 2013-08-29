@@ -89,7 +89,6 @@ def send_ADIS():
         Messages.adis.add_other_fields()
         send_json_obj(Messages.adis.data)
         debug.print_ADIS(Messages.adis.data)
-        Messages.adis.print_log()
     else:
         print "ADIS:  no data\n\n\n\n\n"
 
@@ -99,7 +98,6 @@ def send_ROLL():
         Messages.roll.add_other_fields()
         send_json_obj(Messages.roll.data)
         debug.print_ROLL(Messages.roll.data)
-        Messages.roll.print_log()
     else:
         print "ROLL:  no data\n"
         
@@ -109,7 +107,6 @@ def send_GPS1():
         Messages.gps1.add_other_fields()
         send_json_obj(Messages.gps1.data)
         debug.print_GPS1(Messages.gps1.data)
-        Messages.gps1.print_log()
     else:
         print "GPS1:  no data\n\n\n\n\n\n\n\n\n"
 

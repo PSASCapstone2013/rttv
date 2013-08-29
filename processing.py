@@ -1,7 +1,5 @@
 from config import *
 
-json_log = open(JSON_LOG_FILENAME, 'w')
-
 class Message:
     counter = 0
     data = {}
@@ -40,20 +38,6 @@ class Message:
     def magnitude(self, x, y, z):
         return (x ** 2 + y ** 2 + z ** 2) ** 0.5
         
-    def print_log(self):
-        global json_log
-        if self.data == {}:
-            json_log.write("data not complete!\n ")
-            return
-
-        json_log.write(self.id + " ")
-        for key in self.data.keys():
-            if key == 'fieldID':
-                continue
-            value = self.data[key]
-            json_log.write(str(value) + " ")
-        json_log.write("\n")
-
 class ADIS(Message):
     id = 'ADIS'
 
@@ -100,33 +84,6 @@ class ADIS(Message):
     convert.TEMPERATURE = 0.14                               # Celsius (C)
     convert.AUX_ADC = 806.0 * MICRO                          # volts (V)
 
-    def print_log(self):
-        global json_log
-        if self.data == {}:
-            json_log.write("data not complete!\n ")
-            return
-
-        json_log.write("%s "    % self.data['fieldID'])
-        json_log.write("%d "    % self.data['timestamp'])
-        json_log.write("%1.1f " % self.data['PowerSupply'])
-        json_log.write("%8.3f " % self.data['GyroscopeX'])
-        json_log.write("%8.3f " % self.data['GyroscopeY'])
-        json_log.write("%8.3f " % self.data['GyroscopeZ'])
-        json_log.write("%8.3f " % self.data['GyroscopeMagn'])
-        json_log.write("%8.3f " % self.data['AccelerometerX'])
-        json_log.write("%8.3f " % self.data['AccelerometerY'])
-        json_log.write("%8.3f " % self.data['AccelerometerZ'])
-        json_log.write("%8.3f " % self.data['AccelerometerMagn'])
-        json_log.write("%9.6f " % self.data['MagnetometerX'])
-        json_log.write("%9.6f " % self.data['MagnetometerY'])
-        json_log.write("%9.6f " % self.data['MagnetometerZ'])
-        json_log.write("%9.6f " % self.data['MagnetometerMagn'])
-        json_log.write("%6.2f " % self.data['Temperature'])
-        json_log.write("%12.9f " % self.data['AuxiliaryADC'])
-        json_log.write("\n")
-        
-        
-        
 
 class GPS1(Message):
     # id = 'GPS\x01'
@@ -150,29 +107,6 @@ class GPS1(Message):
         }
         return data
         
-    def print_log(self):
-        global json_log
-        if self.data == {}:
-            json_log.write("data not complete!\n ")
-            return
-
-        json_log.write("%s "     % self.data['fieldID'])
-        json_log.write("%d "     % self.data['timestamp'])
-        json_log.write("%3d "     % self.data['AgeOfDiff'])
-        json_log.write("%3d "     % self.data['NumOfSats'])
-        json_log.write("%6d "    % self.data['GPSWeek'])
-        json_log.write("%12.3f " % self.data['GPSTimeOfWeek'])
-        json_log.write("%12.6f " % self.data['Latitude'])
-        json_log.write("%12.6f " % self.data['Longitude'])
-        json_log.write("%9.3f "  % self.data['Height'])
-        json_log.write("%9.6f "  % self.data['VNorth'])
-        json_log.write("%9.6f "  % self.data['VEast'])
-        json_log.write("%9.6f "  % self.data['Vup'])
-        json_log.write("%12.6f " % self.data['StdDevResid'])
-        json_log.write("0x%.2x " % (self.data['NavMode'] & 0xffff))
-        json_log.write("%3d "    % self.data['ExtendedAgeOfDiff'])
-        json_log.write("\n")
-
 
 class ROLL(Message):
     id = 'ROLL'
