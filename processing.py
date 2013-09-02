@@ -23,7 +23,11 @@ class Message:
             return
 
         self.counter += 1
-        for key in new_data.keys():  # do averaging for every single field
+        for key in new_data.keys():  # do averaging for every single field ...
+            if key == 'timestamp' or \
+               key == 'fieldID':   # ... except for some fields
+                self.data[key] = new_data[key] # copy the most recent value
+                continue             # don't do averaging for these fields
             new_value = new_data[key]
             avg_value = self.data[key]
             avg_value = ((avg_value * (self.counter-1) + new_value) /
@@ -32,8 +36,6 @@ class Message:
 
     def add_other_fields(self):
         self.data['fieldID'] = self.id
-        self.data['timestamp'] = 0  # TODO: figure out how it is used and
-                                    #       whether it is needed
 
     def magnitude(self, x, y, z):
         return (x ** 2 + y ** 2 + z ** 2) ** 0.5
@@ -43,7 +45,6 @@ class ADIS(Message):
 
     def add_other_fields(self):
         self.data['fieldID'] = self.id
-        self.data['timestamp'] = 0
         self.data['GyroscopeMagn'] = \
             self.magnitude(self.data['GyroscopeX'],
                            self.data['GyroscopeY'],
@@ -57,11 +58,12 @@ class ADIS(Message):
                            self.data['MagnetometerY'],
                            self.data['MagnetometerZ'])
 
-    def convert(self, tokens):
+    def convert(self, tokens, timestamp):
         """ converts message data into a python object """
         """ input: tuple containing tokenized raw message fields """
         """ output: python dictionary object with fields in MKS units """
         data = {
+            'timestamp': timestamp,
             'PowerSupply': tokens[0] * self.convert.POWER_SUPPLY,
             'GyroscopeX': tokens[1] * self.convert.RATE_GYRO,
             'GyroscopeY': tokens[2] * self.convert.RATE_GYRO,
@@ -89,8 +91,9 @@ class GPS1(Message):
     # id = 'GPS\x01'
     id = 'GPS1'
 
-    def convert(self, tokens):
+    def convert(self, tokens, timestamp):
         data = {
+            'timestamp': timestamp,
             'AgeOfDiff': tokens[0],                   # seconds (s)
             'NumOfSats': tokens[1],                   # a number
             'GPSWeek': tokens[2],                     # a number
@@ -111,8 +114,9 @@ class GPS1(Message):
 class ROLL(Message):
     id = 'ROLL'
 
-    def convert(self, tokens):
+    def convert(self, tokens, timestamp):
         obj = {
+            'timestamp': timestamp,
             'finPosition': tokens[0] * MICRO, # servo PWM in seconds
             'rollServoDisable': float(tokens[1]),    # boolean
         }

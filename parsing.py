@@ -88,7 +88,7 @@ def parse_data(message_id, timestamp, length, data):
     parsed_data = format.unpack(data)
 
     if message_id == 'ADIS':
-        obj = Messages.adis.convert(parsed_data)
+        obj = Messages.adis.convert(parsed_data, timestamp)
         Messages.adis.average(obj)
         if not debug.valid_ADIS(obj):
             #debug.print_raw_data(data, 2) # 2 bytes per line
@@ -97,13 +97,13 @@ def parse_data(message_id, timestamp, length, data):
         return
 
     if message_id == 'ROLL':
-        obj = Messages.roll.convert(parsed_data)
+        obj = Messages.roll.convert(parsed_data, timestamp)
         Messages.roll.average(obj)
         debug.print_json_log(obj, message_id)
         return
 
     if message_id == 'GPS\x01' or message_id == 'GPS1':
-        obj = Messages.gps1.convert(parsed_data)
+        obj = Messages.gps1.convert(parsed_data, timestamp)
         Messages.gps1.overwrite(obj) # store the most recent one only
         debug.print_json_log(obj, message_id)
         return

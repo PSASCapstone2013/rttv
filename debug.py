@@ -287,7 +287,9 @@ def print_json_log(obj, message_id):
     global msgs_log
     if msgs_log == None:
         return
-    dict_str = str(obj).replace("\'", "\"")
-    json_str = "{\"" + message_id + "\":" + dict_str + "}\n"
+    obj['fieldID'] = message_id
+    ##dict_str = str(obj).replace("\'", "\"") + "\n"
+    json_str = json.dumps(obj, sort_keys=True, separators=(',',':'))
     msgs_log.write(json_str)
+    msgs_log.write("\n")
     
